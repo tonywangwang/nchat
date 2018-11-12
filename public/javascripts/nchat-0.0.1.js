@@ -13,8 +13,8 @@ var chatRoom = function (container, server) {
         var name = d3.select('meta[name=ajs-current-user-fullname]').attr('content');
         var url = 'http://apis.newegg.org/common/v1/domain/user/' + id + '/avatar';*/
 
-        var id = 'jz15';
-        var name = 'James';
+        var id = 'tw14';
+        var name = 'Tony.J.Wang';
         var url = 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2050638809,3513718617&fm=27&gp=0.jpg';
 
         return {
