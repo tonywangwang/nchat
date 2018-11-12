@@ -58,10 +58,10 @@ N-Chat是可接入类似Confluence这样其他软件平台在线实时互动通�
 ### Room
 ```javascript
 {
-    id: 'pageid | spaceKey',
+    id: 'appid | guid',
     name: 'n-chat',
-    type:'page | space',
-    url: 'https://www.newegg.com',
+    type:'confluence | standalone',
+    url: 'https://www.xxxxx.com',
     users:[user1,user2,user3]
 }
 ```
