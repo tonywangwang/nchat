@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<head>
+  <title>N-Chat</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/stylesheets/chatUI.css">
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+  <meta name="viewport" content="width=device-width">
+  <script src="/javascripts/socket.io-1.2.0.js"></script>
+  <script src="/javascripts/jquery-1.11.1.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="/javascripts/chatUI-d3.min.js"></script>
+  <script src="/javascripts/EventUtil.js"></script>
+  <script src="/javascripts/nchat-0.0.1.js"></script>
+</head>
+
+<body id="container">
+
+</body>
+
+</html>
+
+<script type="text/javascript">
+  $(function () {
+    chatRoom('container', 'ws://localhost');
+  });
+</script>
