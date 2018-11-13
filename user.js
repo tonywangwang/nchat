@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const config = require('./config').get();
 
 class manager {
   constructor(_io) {

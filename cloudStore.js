@@ -1,5 +1,4 @@
 const config = require('neg-config').getConfig();
-const _ = require('lodash');
 const request = require('request');
 
 exports.get = function (url, cb) {
@@ -13,7 +12,6 @@ exports.get = function (url, cb) {
         cb(null);
       else
         cb(JSON.parse(body));
-
     } else {
       console.error('Get data from ' + options.uri + ' failed.');
       console.error('StatusCode:' + response.statusCode);
@@ -31,14 +29,9 @@ exports.post = function (url, data, cb) {
   
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 202) {
-      if (!_.isNull(cb)) {
-        cb(body);
-      }
-      console.log('Post to ' + options.uri + ' sucessfully.');
+      if (cb!=undefined)  cb(body);
     } else {
-      if (!_.isNull(cb)) {
-        cb(null);
-      }
+      if (cb!=undefined)  cb(null);
       console.error('Post  failed.');
       console.error('StatusCode:' + response.statusCode);
       console.error('Error:' + error);

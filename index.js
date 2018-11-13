@@ -7,27 +7,35 @@ const io = require('socket.io')(server);
 const multipart = require('connect-multiparty');
 const nc = require('./nchat');
 const file = require('./file');
-const port = process.env.PORT || 80;
+const config = require('./config');
 
-let nchat = new nc(io);
+config.init('local', startup)
 
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/index.html');
-});
+function startup() {
 
-app.post("/uploadFile", multipart(), function (req, res) {
-  let f = new file();
-  let msg;
-  f.upload(req.files, (d) => {
-    msg = JSON.parse(req.body.message);
-    msg.value = '<img src="' + d.url + '" width="400px"/>';
-    nchat.messager.send(msg)
+  let nchat = new nc(io);
+
+  app.use(express.static(path.join(__dirname, 'public')));
+
+  app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/index.html');
   });
-  res.end();
-});
 
-server.listen(port, function () {
-  console.log('listening on *:' + port);
-});
+  app.post("/uploadFile", multipart(), function (req, res) {
+    let f = new file();
+    let msg;
+    f.upload(req.files, (d) => {
+      msg = JSON.parse(req.body.message);
+      msg.value = '<img src="' + d.url + '" width="400px"/>';
+      nchat.messager.send(msg)
+    });
+    res.end();
+  });
+
+  const port = process.env.PORT || config.get().port || 80;
+  server.listen(port, function () {
+    console.log('N-Chat is listening on *:' + port);
+  });
+
+}

@@ -1,4 +1,6 @@
 const uuidv1 = require('uuid/v1');
+const cloudStore = require('./cloudStore');
+const config = require('./config').get();
 let user = require('./user').user;
 
 class messager {
@@ -22,15 +24,41 @@ class messager {
 
   listen(_socket, _cb) {
     _socket.on('message', (_msg) => {
-      this.send(_msg,_socket);
+      this.send(_msg, _socket);
       if (_cb == undefined) return;
       _cb(_msg);
     });
   }
 
+
+  send_History(socket, room) {
+    
+    if (config.database == 'array') {
+      for (let i in this.messages) {
+        if (this.messages[i].room.id == room.id)
+          socket.emit('message', this.messages[i]);
+      }
+    }
+
+    if (config.database == 'cloudStore') {
+      cloudStore.get(config.message.cloudstore, //获取符合config配置条件以及room.id的messages
+        function (_messages) {
+          _messages.forEach(_msg => {
+            socket.emit('message', _msg);
+          });
+        });
+    }
+
+  }
+
   add(_message) {
     let m = new message(_message);
-    this.messages.push(m)
+    if (config.database == 'array') {
+      this.messages.push(m)
+    }
+    if (config.database == 'cloudStore') {
+      cloudStore.post(config.message.cloudstore, m);
+    }
     return m;
   };
 
@@ -38,10 +66,9 @@ class messager {
     messages.splice(_message)
   };
 
-  send(_msg,_socket) {
+  send(_msg, _socket) {
     let msg = this.add(_msg);
-    if(_socket!=undefined)
-    {
+    if (_socket != undefined) {
       _socket.to(msg.room.id).emit('message', msg);
       return;
     }
@@ -77,16 +104,11 @@ class messager {
     当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
   }
 
-  send_History(socket,room)
-  {
-    for (let i in this.messages) {
-      if (this.messages[i].room.id == room.id)
-        socket.emit('message', this.messages[i]);
-    }
-  }
-
-  send_DuplicateJoin({roomUrl,roomName,socket})
-  {
+  send_DuplicateJoin({
+    roomUrl,
+    roomName,
+    socket
+  }) {
     let msg = this.botMessage(`你已经加入 <a href="${roomUrl}" target="_blank">${roomName}</a> ,不能重复加入`);
     socket.emit('message', msg);
   }

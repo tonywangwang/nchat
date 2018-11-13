@@ -1,23 +1,7 @@
-var _ = require('lodash');
+const _ = require('lodash');
 const uuidv1 = require('uuid/v1');
+const config = require('./config').get();
 let um = require('./user').manager;
-
-class room {
-  constructor({
-    id,
-    name,
-    desc,
-    type,
-    url
-  }) {
-    this.id = id || uuidv1();
-    this.name = name || 'Anonymous';
-    this.desc = desc || this.name;
-    this.type = type || 'standalone';
-    this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
-    this.userManager = new um();
-  }
-}
 
 class manager {
 
@@ -100,6 +84,24 @@ class manager {
   }
 
 }
+
+class room {
+  constructor({
+    id,
+    name,
+    desc,
+    type,
+    url
+  }) {
+    this.id = id || uuidv1();
+    this.name = name || 'Anonymous';
+    this.desc = desc || this.name;
+    this.type = type || 'standalone';
+    this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
+    this.userManager = new um();
+  }
+}
+
 
 module.exports.room = room;
 module.exports.manager = manager;

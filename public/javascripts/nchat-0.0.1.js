@@ -1,63 +1,82 @@
 var chat; //for chatUI-d3.min.js required 
 
 var chatRoom = function (container, server) {
-    var room,user,users,roomUsers,rooms;
+    var room, user, users, roomUsers, rooms;
     var uploadArea = document.getElementById(container);
-    var ui = chatUI(d3.select('#'+container));
+    var ui = chatUI(d3.select('#' + container));
     var socket = io.connect(server);
     chat = ui;
-    
-    var getCurrentUser = function () {
+
+    var initCurrentUser = function () {
 
         /*var id = d3.select('meta[name=ajs-remote-user]').attr('content');
         var name = d3.select('meta[name=ajs-current-user-fullname]').attr('content');
         var url = 'http://apis.newegg.org/common/v1/domain/user/' + id + '/avatar';*/
 
-        var id = '111';
+        var id = 'tw14';
         var name = 'Tony.J.Wang';
         var url = 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2050638809,3513718617&fm=27&gp=0.jpg';
 
-        return {
+        var _user = {
             id: id,
             name: name,
             iconUrl: url,
-        };;
+        }
+
+        return _user;
     }
 
-    var getCurrentRoom = function () {
+    var initCurrentRoom = function () {
 
         /*var id = d3.select('meta[name=ajs-page-id]')== null?0:d3.select('meta[name=ajs-page-id]').attr('content');
         var name =   d3.select('meta[name=ajs-page-title]')== null?null:d3.select('meta[name=ajs-page-title]').attr('content'); 
         var url = id==0?d3.select('meta[name=ajs-base-url]').attr("content") :d3.select('meta[name=ajs-base-url]').attr("content") + '/pages/viewpage.action?pageId=' + id;
         var spaceName= d3.select('meta[name=ajs-space-name]')== null?null:d3.select('meta[name=ajs-space-name]').attr('content'); 
         var spaceKey= d3.select('meta[name=ajs-space-key]')== null?null:d3.select('meta[name=ajs-space-key]').attr('content'); */
-        var id = getQueryString('roomid')!=null?getQueryString('roomid'):1;
-        var type = getQueryString('roomtype')!=null?getQueryString('roomtype'):'standalone';
-        var name = getQueryString('roomname')!=null?getQueryString('roomname'):'匿名';
-        var url = '/?roomid='+id + '&roomname=' + name + '&roomtype=' + type;
+        var id = getQueryString('roomid') != null ? getQueryString('roomid') : 1;
+        var type = getQueryString('roomtype') != null ? getQueryString('roomtype') : 'standalone';
+        var name = getQueryString('roomname') != null ? getQueryString('roomname') : '匿名';
+        var url = '/?roomid=' + id + '&roomname=' + name + '&roomtype=' + type;
 
-        if(type=='standalone')
+        if (type == 'standalone')
             d3.select('title').html(name);
 
-        return {
+        var _room = {
             id: id,
             name: name,
             type: type,
             url: url
         };
+
+        return _room;
+    }
+
+    var initRoomList = function(_rooms)
+    {
+
+    }
+
+    var initUserListInRoom = function(_users)
+    {
+
+    }
+
+    var initUserList = function(_users)
+    {
+
     }
 
     var uploadFile = function (event) {
         EventUtil.preventDefault(event); //阻止事件的默认行为
         var formData = new FormData();
         formData.append("message", JSON.stringify({
-            msg:'uploadfile',
+            msg: 'uploadfile',
             sender: user,
-            room:room
+            room: room
         }));
         if (event.type == "drop") {
             var files = event.dataTransfer.files;
-            for (var i = 0; i<files.length; i++) {
+            for (var i = 0; i < files.length; i++) {
                 formData.append("file" + i, files[i]);
             }
 
@@ -85,7 +104,7 @@ var chatRoom = function (container, server) {
         socket.emit('message', {
             value: msg,
             sender: user,
-            room:room
+            room: room
         });
 
         ui.addBubble({
@@ -105,18 +124,15 @@ var chatRoom = function (container, server) {
         });
 
         socket.on('users', function (_users) {
-            users = _users;
-           //alert(users.length);
+            users = initUserList(_users);
         });
 
         socket.on('room_users', function (_users) {
-            roomUsers = _users;
-            //alert(roomUsers.length);
+            roomUsers = initUserListInRoom(_users);
         });
 
         socket.on('rooms', function (_rooms) {
-            rooms = _rooms;
-            //alert(rooms.length);
+            rooms = initRoomList(_rooms);
         });
 
         socket.on('message', function (msg) {
@@ -131,10 +147,9 @@ var chatRoom = function (container, server) {
         });
 
     }
-
     var init = function () {
-         room = getCurrentRoom();
-         user = getCurrentUser();
+        room=initCurrentRoom();
+        user=initCurrentUser();
         ui.showInput(sendMessage);
         socketEvent();
         EventUtil.addHandler(uploadArea, "dragenter", uploadFile);

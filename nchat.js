@@ -1,7 +1,9 @@
 const _ = require('lodash');
-let um = require('./user').manager;
-let msgr = require('./message').messager;
-let rm = require('./room').manager;
+const um = require('./user').manager;
+const msgr = require('./message').messager;
+const rm = require('./room').manager;
+const config = require('./config').get();
+
 
 class nchat {
   constructor(io) {
@@ -68,7 +70,7 @@ class nchat {
           //向新加入用户同步rooms
           this.roomManager.sendRooms(socket);
           //向新加入用户发送该房间历史消息
-          this.messager.send_History(socket,room);
+          this.messager.send_History(socket, room);
 
         });
       });
