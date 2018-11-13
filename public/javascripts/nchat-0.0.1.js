@@ -13,8 +13,8 @@ var chatRoom = function (container, server) {
         var name = d3.select('meta[name=ajs-current-user-fullname]').attr('content');
         var url = 'http://apis.newegg.org/common/v1/domain/user/' + id + '/avatar';*/
 
-        var id = 'tw14';
-        var name = 'Tony.J.Wang';
+        var id = 'jy11';
+        var name = 'Jack.J.Yang';
         var url = 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2050638809,3513718617&fm=27&gp=0.jpg';
 
         var _user = {
@@ -48,21 +48,69 @@ var chatRoom = function (container, server) {
             url: url
         };
 
+        d3.select("#room_name").html(name);
+        d3.select("#room_desc")
+        .html('N-Chat Alpha Powered by Tony.J.Wang');
+
         return _room;
     }
 
-    var initRoomList = function(_rooms)
-    {
+    var initRoomList = function (_rooms) {
 
+        d3.select("#rooms").html('');
+
+        d3.select("#rooms_count").style('margin-left','10px').html(_rooms.length);
+
+        _rooms.forEach(function (_room) {
+
+            var li = d3.select("#rooms").append('li');
+
+            li.append('img')
+                .attr('src', '/images/' + _room.type + '.png')
+                .attr('class', 'img-circle')
+                .style('height', '30px')
+                .style('width', '30px')
+                .style('margin-right', '10px')
+                .style('vertical-align', 'middle');
+
+            li.append('a')
+                .attr('href', _room.url)
+                .attr('target', '_blank')
+                .style('margin-right', '10px')
+                .html(_room.name)
+
+            li.append('span')
+            .attr('class','badge')
+            .html(_room.userManager.users.length);
+
+        });
     }
 
-    var initUserListInRoom = function(_users)
-    {
+    var initUserListInRoom = function (_users) {
 
+        d3.select("#room_users").html('');
+
+        d3.select("#room_users_count").style('margin-left','10px').html(_users.length);
+
+        _users.forEach(function (_user) {
+            d3.select("#room_users")
+
+            var li = d3.select("#room_users").append('li')
+
+            li.append('img')
+                .attr('src', _user.iconUrl)
+                .attr('class', 'img-circle')
+                .style('height', '30px')
+                .style('width', '30px')
+                .style('margin-right', '5px')
+                .style('vertical-align', 'middle');
+
+            li.append('span').html(_user.name);
+
+        });
     }
 
-    var initUserList = function(_users)
-    {
+    var initUserList = function (_users) {
 
     }
 
@@ -148,8 +196,8 @@ var chatRoom = function (container, server) {
 
     }
     var init = function () {
-        room=initCurrentRoom();
-        user=initCurrentUser();
+        room = initCurrentRoom();
+        user = initCurrentUser();
         ui.showInput(sendMessage);
         socketEvent();
         EventUtil.addHandler(uploadArea, "dragenter", uploadFile);

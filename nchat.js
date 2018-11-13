@@ -123,7 +123,7 @@ class nchat {
     });
 
     //创建成功后，同步所有用户的rooms
-    this.roomManager.sendRooms();
+    //this.roomManager.sendRooms();
 
   }
 
