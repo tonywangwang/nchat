@@ -4,8 +4,8 @@ N-Chat是可接入类似Confluence这样其他软件平台在线实时互动通�
 
 ## 功能
 
-* 按照Page构建Chat区域(Room)
-  * Home Page 作为公共Chat区域
+* 如果是接入模式，可按照三方系统Page等自定义构建Chat区域(Room)
+  * 比如Confluence Home Page 作为公共Chat区域
   * 用户发送的消息默认广播到所在Chat区域
 * 支持文件传输
   * 图片上传成功后，直接以图片形式显示
@@ -58,10 +58,10 @@ N-Chat是可接入类似Confluence这样其他软件平台在线实时互动通�
 ### Room
 ```javascript
 {
-    id: 'pageid | spaceKey',
+    id: 'appid | guid',
     name: 'n-chat',
-    type:'page | space',
-    url: 'https://www.newegg.com',
+    type:'confluence | standalone',
+    url: 'https://www.xxxxx.com',
     users:[user1,user2,user3]
 }
 ```
