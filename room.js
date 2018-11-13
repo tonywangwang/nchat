@@ -14,17 +14,64 @@ class room {
     this.name = name || 'Anonymous';
     this.desc = desc || this.name;
     this.type = type || 'standalone';
-    this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${this.name}`;
+    this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
     this.userManager = new um();
   }
 }
 
 class manager {
 
-  constructor() {
+  constructor(_io) {
+    this.io = _io;
     this.rooms = [];
+    this.listen = this.listen.bind(this);
     this.add = this.add.bind(this);
     this.remove = this.remove.bind(this);
+    this.sendRooms = this.sendRooms.bind(this);
+    this.isInAnyRoom = this.isInAnyRoom.bind(this);
+    this.getById = this.getById.bind(this);
+    this.removeUserBySid = this.removeUserBySid.bind(this);
+  }
+
+  listen(_socket, _cb) {
+
+  }
+
+  add(_room, _cb) {
+    let r = _.findLast(this.rooms, {
+      id: _room.id,
+      type: _room.type
+    });
+
+    if (r == undefined) {
+      r = new room(_room);
+      this.rooms.push(r);
+      this.sendRooms();
+      if (_cb != undefined) _cb(true);
+    } else {
+      if (_cb != undefined) _cb(false);
+    }
+
+    return r;
+  };
+
+  remove(_room) {
+    let r = _.findLast(this.rooms, {
+      id: _room.id,
+      type: _room.type
+    });
+    if (r != undefined) this.rooms.splice(r)
+
+    return r;
+  };
+
+  sendRooms(_socket) {
+
+    if (_socket != undefined)
+      _socket.emit('rooms', this.rooms);
+    else
+      this.io.emit('rooms', this.rooms)
+
   }
 
   removeUserBySid(sid, cb) {
@@ -51,34 +98,6 @@ class manager {
       id: _id
     });
   }
-
-  add(_room,cb) {
-    let r = _.findLast(this.rooms, {
-      id: _room.id,
-      type: _room.type
-    });
-
-    if (r == undefined) {
-      r = new room(_room);
-      this.rooms.push(r);
-      if (cb != undefined) cb(true);
-    } else {
-
-      if (cb != undefined) cb(false);
-    }
-
-    return r;
-  };
-
-  remove(_room) {
-    let r = _.findLast(this.rooms, {
-      id: _room.id,
-      type: _room.type
-    });
-    if (r != undefined) this.rooms.splice(r)
-
-    return r;
-  };
 
 }
 

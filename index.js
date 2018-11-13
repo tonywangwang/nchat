@@ -23,7 +23,7 @@ app.post("/uploadFile", multipart(), function (req, res) {
   f.upload(req.files, (d) => {
     msg = JSON.parse(req.body.message);
     msg.value = '<img src="' + d.url + '" width="400px"/>';
-    nchat.sendMessage(msg)
+    nchat.messager.send(msg)
   });
   res.end();
 });
