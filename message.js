@@ -1,6 +1,7 @@
 const uuidv1 = require('uuid/v1');
 const cloudStore = require('./cloudStore');
 const config = require('./config').get();
+const _ = require('lodash');
 let user = require('./user').user;
 
 class messager {
@@ -18,6 +19,7 @@ class messager {
     this.send_CreateRoom = this.send_CreateRoom.bind(this);
     this.send_Help = this.send_Help.bind(this);
     this.send_DuplicateJoin = this.send_DuplicateJoin.bind(this);
+    this.send_ToAll = this.send_ToAll.bind(this);
     this.botMessage = this.botMessage.bind(this);
 
   }
@@ -26,24 +28,24 @@ class messager {
     _socket.on('message', (_msg) => {
       this.send(_msg, _socket);
       if (_cb == undefined) return;
-      _cb(_msg);
+      _cb(_msg,_socket);
     });
   }
 
 
   send_History(socket, room) {
-    
+
     if (config.database == 'array') {
       for (let i in this.messages) {
-        if (this.messages[i].room.id == room.id)
+        if (this.messages[i].room == null || this.messages[i].room.id == room.id)
           socket.emit('message', this.messages[i]);
       }
     }
 
-    if (config.database == 'cloudStore') {
+    if (config.database == 'cloudstore') {
       cloudStore.get(config.message.cloudstore, //获取符合config配置条件以及room.id的messages
         function (_messages) {
-          _messages.forEach(_msg => {
+          _.orderBy(_messages.rows,['time'],['asc']).forEach(_msg => {
             socket.emit('message', _msg);
           });
         });
@@ -56,7 +58,7 @@ class messager {
     if (config.database == 'array') {
       this.messages.push(m)
     }
-    if (config.database == 'cloudStore') {
+    if (config.database == 'cloudstore') {
       cloudStore.post(config.message.cloudstore, m);
     }
     return m;
@@ -69,7 +71,10 @@ class messager {
   send(_msg, _socket) {
     let msg = this.add(_msg);
     if (_socket != undefined) {
-      _socket.to(msg.room.id).emit('message', msg);
+      if (msg.room != null)
+        _socket.to(msg.room.id).emit('message', msg);
+      else
+        _socket.broadcast.emit('message', msg);
       return;
     }
 
@@ -86,13 +91,24 @@ class messager {
     roomUserCount,
     socket: socket
   }) {
+
     socket.emit('message', this.botMessage(
       `欢迎进入  <a href="${roomUrl}" target="_blank">${roomName}</a>,
     当前总计有 ${userCount} 位 Newgger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
+ 
+    socket.emit('message',this.botMessage(`N-Chat用户指南: 
+    <url>
+    <li>拖拽发送图片</li> 
+    <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
+    <li>发送 <font color="green">#help</font> 获得帮助</li>
+    <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
+    </ul>`));
+ 
   };
 
   send_SomebodyJoinSomeRoom({
     userName,
+    roomid,
     roomUrl,
     roomName,
     userCount,
@@ -100,7 +116,11 @@ class messager {
     socket
   }) {
 
-    socket.broadcast.emit('message', this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
+    if (roomid)
+      socket.broadcast.to(roomid).emit('message', this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
+    当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
+    else
+      socket.broadcast.emit('message', this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
     当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
   }
 
@@ -124,8 +144,13 @@ class messager {
   }
 
   send_Help(_msg) {
-    if (_msg.value.lastIndexOf('#?') < 0) return;
-    let msg = this.botMessage(`N-Chat用户指南: 1.拖拽发送图片 2.发送 <font color="red">#room#房间名称</font> 创建新的房间 3.发送 <font color="red">#?</font> 获得帮助`);
+    if (_msg.value.lastIndexOf('#help') < 0) return;
+    let msg = this.botMessage(`N-Chat用户指南: 
+    <url>
+    <li>拖拽发送图片</li> 
+    <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
+    <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
+    </ul>`);
     msg.room = _msg.room;
     this.send(msg);
   }
@@ -140,6 +165,12 @@ class messager {
     let msg = this.botMessage(` ${creater}  创建了新的房间 <a href="${roomUrl}" target="_blank">${roomName}</a>`)
     msg.room = _room;
     this.send(msg);
+  }
+
+  send_ToAll(_msg,_socket) {
+    if (_msg.value.lastIndexOf('@all') < 0) return;
+    _msg.room = null;
+    this.send(_msg,_socket);
   }
 
   botMessage(value) {

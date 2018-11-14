@@ -17,6 +17,7 @@ class nchat {
     this._actions = this._actions.bind(this);
     this._action_createRoom = this._action_createRoom.bind(this);
     this._action_help = this._action_help.bind(this);
+    this._action_sendMsgToAll = this._action_sendMsgToAll.bind(this);
     this.io.on('connection', this._connect)
   }
   _connect(socket) {
@@ -55,9 +56,10 @@ class nchat {
             socket: socket
           });
 
-          //向除新加入用户本人外其他用户广播用户加入房间消息
+          //向房间用户有新人加入房间
           this.messager.send_SomebodyJoinSomeRoom({
             userName: user.name,
+            roomid:room.id,
             roomName: room.name,
             roomUrl: room.url,
             userCount: this.userManager.users.length,
@@ -67,8 +69,8 @@ class nchat {
 
           //向该房间用户同步在该房间的在线users
           this.userManager.sendUsers(room);
-          //向新加入用户同步rooms
-          this.roomManager.sendRooms(socket);
+          //向所有用户同步rooms （房间人数变化）
+          this.roomManager.sendRooms();
           //向新加入用户发送该房间历史消息
           this.messager.send_History(socket, room);
 
@@ -88,6 +90,7 @@ class nchat {
             this.userManager.sendUsers();
           }
 
+          this.roomManager.sendRooms();
           this.messager.send_Leave({
             userName: _user.name,
             userCount: this.userManager.users.length,
@@ -100,9 +103,10 @@ class nchat {
     });
   }
 
-  _actions(_msg) {
+  _actions(_msg,_socket) {
     this._action_createRoom(_msg);
-    this._action_help(_msg)
+    this._action_help(_msg);
+    this._action_sendMsgToAll(_msg,_socket)
   }
 
   _action_createRoom(_msg) {
@@ -129,6 +133,10 @@ class nchat {
 
   _action_help(_msg) {
     this.messager.send_Help(_msg);
+  }
+
+  _action_sendMsgToAll(_msg,_socket) {
+    this.messager.send_ToAll(_msg,_socket);
   }
 
 }

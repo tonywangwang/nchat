@@ -9,7 +9,7 @@ const nc = require('./nchat');
 const file = require('./file');
 const config = require('./config');
 
-config.init('local', startup)
+config.init('negConfig', startup)
 
 
 function startup() {

@@ -1,21 +1,21 @@
 const negConfig = require('neg-config');
 
 let config = {
-  port: 80,
-  database: 'array', //'cloudstore',
-  message: {
-    cloudstore: 'http://xxxx/message',
-    loadHistoryMsgCount: 100,
+  "port": 80,
+  "database": "cloudstore",
+  "message": {
+    "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/message?pageSize=100&sortField=time&sort=desc",
+    "loadHistoryMsgCount": 100
   },
-  room: {
-    cloudstore: 'http://xxxx/room'
+  "room": {
+    "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/room"
   },
-  user: {
-    cloudstore: 'http://xxxx/user'
+  "user": {
+    "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/user"
   }
 }
 
-enableNegConfig = function (cb) {
+let enableNegConfig = function (cb) {
   negConfig.init({
       env: process.env.ENV == 'PRD' ? 'prd' : 'prdtesting'
     })
@@ -30,17 +30,12 @@ enableNegConfig = function (cb) {
     });
 }
 
-get = function () {
+exports.get = function () {
   return config;
-}
-
-init = function (service, cb) {
+};
+exports.init = function (service, cb) {
   if (service == 'negConfig')
     enableNegConfig(cb);
   else
     cb();
-}
-
-
-module.exports.get = get;
-module.exports.init = init;
+};

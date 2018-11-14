@@ -75,6 +75,9 @@ class manager {
       if (_room.userManager.getById(_user.id))
         return true;
     });
+
+    return false;
+
   }
 
   getById(_id) {
@@ -91,13 +94,15 @@ class room {
     name,
     desc,
     type,
-    url
+    url,
+    iconUrl,
   }) {
     this.id = id || uuidv1();
     this.name = name || 'Anonymous';
     this.desc = desc || this.name;
     this.type = type || 'standalone';
     this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
+    this.iconUrl = iconUrl;
     this.userManager = new um();
   }
 }
