@@ -27,6 +27,7 @@ function startup() {
     let msg;
     f.upload(req.files, (d) => {
       msg = JSON.parse(req.body.message);
+      msg.room = nchat.roomManager.add(msg.room);
       nchat.messager.send_File({
         msg: msg,
         url: d.url,

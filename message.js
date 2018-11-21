@@ -132,21 +132,13 @@ class messager {
     socket
   }) {
 
+    let msg = this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
+    当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`)
+    
     if (roomid)
-      socket.broadcast.to(roomid).emit('message', this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
-    当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
+      socket.broadcast.to(roomid).emit('message', msg);
     else
-      socket.broadcast.emit('message', this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
-    当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
-  }
-
-  send_DuplicateJoin({
-    roomUrl,
-    roomName,
-    socket
-  }) {
-    let msg = this.botMessage(`你已经加入 <a href="${roomUrl}" target="_blank">${roomName}</a> ,不能重复加入`);
-    socket.emit('message', msg);
+      socket.broadcast.emit('message', msg);
   }
 
   send_Leave({
@@ -188,6 +180,16 @@ class messager {
     _msg.room = null;
     this.send(_msg, _socket);
   }
+
+  send_DuplicateJoin({
+    roomUrl,
+    roomName,
+    socket
+  }) {
+    let msg = this.botMessage(`你已经加入 <a href="${roomUrl}" target="_blank">${roomName}</a> ,不能重复加入`);
+    socket.emit('message', msg);
+  }
+
 
   botMessage(value) {
     return new message({

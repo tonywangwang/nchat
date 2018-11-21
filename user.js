@@ -10,15 +10,12 @@ class manager {
     };
     this.io = _io;
     this.users = [];
-    this.listen = this.listen.bind(this);
     this.add = this.add.bind(this);
     this.remove = this.remove.bind(this);
     this.sendUsers = this.sendUsers.bind(this);
     this.removeBySid = this.removeBySid.bind(this);
     this.getById = this.getById.bind(this);
   }
-
-  listen(_socket, _cb) {}
 
   add(_user, _cb) {
     let u = _.findLast(this.users, {
@@ -42,15 +39,6 @@ class manager {
     });
   };
 
-  sendUsers(_room) {
-    //向指定房间用户同步在该房间的在线users
-    if (_room != undefined)
-      this.io.to(_room.socket_room).emit('room_users', _room.userManager.users);
-    else
-      //向所有人同步所有在线users
-      this.io.emit('users', this.users);
-  }
-
   removeBySid(sid) {
    return _.remove(this.users, (_u) => {
       _u.removeSocket(sid);
@@ -62,6 +50,15 @@ class manager {
     return _.findLast(this.users, {
       id: _id
     });
+  }
+
+  sendUsers(_room) {
+    //向指定房间用户同步在该房间的在线users
+    if (_room != undefined)
+      this.io.to(_room.socket_room).emit('room_users', _room.userManager.users);
+    else
+      //向所有人同步所有在线users
+      this.io.emit('users', this.users);
   }
 
 
@@ -79,7 +76,6 @@ class user {
     this.desc = desc;
     this.iconUrl = iconUrl;
     this.sockets = [];
-    this.aciton = this.aciton.bind(this);
     this.addSocket = this.addSocket.bind(this);
     this.removeSocket = this.removeSocket.bind(this);
   }
@@ -94,8 +90,6 @@ class user {
       return _s == sid
     })
   }
-
-  aciton() {}
 }
 
 module.exports.user = user;

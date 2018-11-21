@@ -15,6 +15,7 @@
   <script src="/javascripts/nchat-standalone.js"></script>
   <script src="/javascripts/bootstrap.min.js"></script>
 </head>
+
 <body>
   <div class="container" style="width:100vw">
     <div class="row clearfix">
@@ -30,7 +31,7 @@
       </div>
     </div>
     <div class="row clearfix">
-      <div class="col-md-3 column" id='menu' >
+      <div class="col-md-3 column" id='menu'>
         <div class="panel-group" id="panel-242930">
           <div class="panel panel-default">
             <div class="panel-heading">
@@ -39,7 +40,7 @@
               </a>
             </div>
             <div id="panel-element-699109" class="panel-collapse in">
-              <div class="panel-body">
+              <div class="panel-body" id="users-container">
                 <ul id="room_users" class="list-unstyled"></ul>
               </div>
             </div>
@@ -50,7 +51,7 @@
                 <span class="badge" id="rooms_count"></span></a>
             </div>
             <div id="panel-element-444761" class="panel-collapse in">
-              <div class="panel-body">
+              <div class="panel-body pre-scrollable" id="rooms-container">
                 <ul id="rooms" class="list-unstyled"></ul>
               </div>
             </div>
@@ -62,6 +63,7 @@
     </div>
   </div>
 </body>
+
 </html>
 <script type="text/javascript">
   $(function () {

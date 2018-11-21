@@ -8,17 +8,12 @@ class manager {
   constructor(_io) {
     this.io = _io;
     this.rooms = [];
-    this.listen = this.listen.bind(this);
     this.add = this.add.bind(this);
     this.remove = this.remove.bind(this);
     this.sendRooms = this.sendRooms.bind(this);
     this.isInAnyRoom = this.isInAnyRoom.bind(this);
     this.getById = this.getById.bind(this);
     this.removeUserBySid = this.removeUserBySid.bind(this);
-  }
-
-  listen(_socket, _cb) {
-
   }
 
   add(_room, _cb) {
@@ -35,7 +30,6 @@ class manager {
     } else {
       if (_cb != undefined) _cb(false);
     }
-
     return r;
   };
 
@@ -48,18 +42,8 @@ class manager {
       _.remove(this.rooms, (_r) => {
         return _r.id == r.id && _r.type == r.type
       });
-
     return r;
   };
-
-  sendRooms(_socket) {
-
-    if (_socket != undefined)
-      _socket.emit('rooms', this.rooms);
-    else
-      this.io.emit('rooms', this.rooms)
-
-  }
 
   removeUserBySid(sid, cb) {
     let _user;
@@ -78,15 +62,20 @@ class manager {
       if (_room.userManager.getById(_user.id))
         return true;
     });
-
     return false;
-
   }
 
   getById(_id) {
     return _.findLast(this.rooms, {
       id: _id
     });
+  }
+
+  sendRooms(_socket) {
+    if (_socket != undefined)
+      _socket.emit('rooms', this.rooms);
+    else
+      this.io.emit('rooms', this.rooms)
   }
 
 }

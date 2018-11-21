@@ -113,7 +113,6 @@ class nchat {
     });
   }
 
-
   _actions(_msg, _socket) {
     this._action_createRoom(_msg);
     this._action_help(_msg);
@@ -126,8 +125,7 @@ class nchat {
     if (!name || name.trim().length == 0) return;
 
     let room = this.roomManager.add({
-      name: name.trim(),
-      type: 'standalone'
+      name: name.trim()
     });
 
     this.messager.send_CreateRoom({
@@ -136,9 +134,6 @@ class nchat {
       _room: _msg.room,
       creater: _msg.sender.name
     });
-
-    //创建成功后，同步所有用户的rooms
-    //this.roomManager.sendRooms();
 
   }
 

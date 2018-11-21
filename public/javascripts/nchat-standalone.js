@@ -8,23 +8,31 @@ var chatRoom = function (container, server) {
 
     var initCurrentUser = function (callback) {
         var _user = {
-            id: 'tw14',
-            name: 'Tony.J.Wang',
-            iconUrl: 'http://apis.newegg.org/common/v1/domain/user/tw14/avatar'
+            id: 'tw20',
+            name: 'Tony.J.Wang2',
+            iconUrl: 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2098054987,2271776465&fm=26&gp=0.jpg'
         }
 
-        login_ne(function (userInfo) {
+        d3.select("#user_icon")
+        .attr('src', _user.iconUrl)
+        .attr('title', _user.name);
+
+        callback(_user);
+
+      /*  login_ne(function (userInfo) {
             _user.id = userInfo.UserID;
             _user.name = userInfo.FullName;
             _user.iconUrl = userInfo.Avatar;
 
             d3.select("#user_icon")
                 .attr('src', _user.iconUrl)
-                .attr('title', _user.name)
+                .attr('title', _user.name);
 
             if (callback != undefined)
                 callback(_user);
-        });
+        });*/
+
+    
     }
 
     var initCurrentRoom = function () {
