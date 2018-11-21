@@ -11,12 +11,14 @@ body {
 
 
 #users-container {
-  height: 30vh;
+  height: auto;
+  max-height: 30vh;
   overflow: auto;
 }
 
 #rooms-container {
-  height:58vh;
+  height:auto;
+  max-height: 50vh;
   overflow: auto;
 }
 

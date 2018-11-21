@@ -156,7 +156,9 @@ class messager {
     let msg = this.botMessage(`N-Chat用户指南: 
     <url>
     <li>拖拽发送图片</li> 
+    <li>双击窗口切换全屏模式</li>
     <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
+    <li>发送 <font color="green">#help</font> 获得帮助</li>
     <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
     </ul>`);
     msg.room = _msg.room;

@@ -8,7 +8,7 @@ var chatRoom = function (container, server) {
 
     var initCurrentUser = function (callback) {
         var _user = {
-            id: 'tw20',
+            id: 'tw7',
             name: 'Tony.J.Wang2',
             iconUrl: 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2098054987,2271776465&fm=26&gp=0.jpg'
         }
