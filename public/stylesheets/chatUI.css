@@ -183,11 +183,11 @@ body {
 }
 
 .cb-bubble .bubble-ctn-human {
-  background-color: #fff;
+  background-color: rgb(146, 233, 111);
   border-bottom-right-radius: 0px;
   text-align: right;
   transform: translateX(0px);
-  border: 1px solid silver;
+  border: 0px solid silver;
   border-radius: 2em;
   padding: 10px
 }

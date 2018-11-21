@@ -44,7 +44,10 @@ class manager {
       id: _room.id,
       type: _room.type
     });
-    if (r != undefined) this.rooms.splice(r)
+    if (r != undefined)
+      _.remove(this.rooms, (_r) => {
+        return _r.id == r.id && _r.type == r.type
+      });
 
     return r;
   };
@@ -61,7 +64,7 @@ class manager {
   removeUserBySid(sid, cb) {
     let _user;
     this.rooms.forEach((_room) => {
-      _user = _room.userManager.removeBySid(sid)
+      _user = _room.userManager.removeBySid(sid);
       if (_user != undefined) {
         if (cb != undefined) cb(_user, _room);
         return _user;
@@ -102,7 +105,8 @@ class room {
     this.desc = desc || this.name;
     this.type = type || 'standalone';
     this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
-    this.iconUrl = iconUrl;
+    this.iconUrl = iconUrl || '/images/' + this.type + '.png';
+    this.socket_room = this.type + '_' + this.id;
     this.userManager = new um();
   }
 }

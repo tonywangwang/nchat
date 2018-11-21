@@ -2,13 +2,14 @@ const uuidv1 = require('uuid/v1');
 const cloudStore = require('./cloudStore');
 const config = require('./config').get();
 const _ = require('lodash');
+const path = require('path');
 let user = require('./user').user;
+
 
 class messager {
   constructor(_io) {
     this.io = _io;
     this.messages = [];
-    this.listen = this.listen.bind(this);
     this.add = this.add.bind(this);
     this.remove = this.remove.bind(this);
     this.send = this.send.bind(this);
@@ -20,18 +21,10 @@ class messager {
     this.send_Help = this.send_Help.bind(this);
     this.send_DuplicateJoin = this.send_DuplicateJoin.bind(this);
     this.send_ToAll = this.send_ToAll.bind(this);
+    this.send_File = this.send_File.bind(this);
     this.botMessage = this.botMessage.bind(this);
 
   }
-
-  listen(_socket, _cb) {
-    _socket.on('message', (_msg) => {
-      this.send(_msg, _socket);
-      if (_cb == undefined) return;
-      _cb(_msg,_socket);
-    });
-  }
-
 
   send_History(socket, room) {
 
@@ -45,8 +38,9 @@ class messager {
     if (config.database == 'cloudstore') {
       cloudStore.get(config.message.cloudstore, //获取符合config配置条件以及room.id的messages
         function (_messages) {
-          _.orderBy(_messages.rows,['time'],['asc']).forEach(_msg => {
-            socket.emit('message', _msg);
+          _.orderBy(_messages.rows, ['time'], ['asc']).forEach(_msg => {
+            if (_msg.room == null || _msg.room.id == room.id)
+              socket.emit('message', _msg);
           });
         });
     }
@@ -65,23 +59,44 @@ class messager {
   };
 
   remove(_message) {
-    messages.splice(_message)
+    _.remove(this.messages, (_m) => {
+      return _m.id == _message.id
+    });
   };
 
   send(_msg, _socket) {
     let msg = this.add(_msg);
     if (_socket != undefined) {
       if (msg.room != null)
-        _socket.to(msg.room.id).emit('message', msg);
+        _socket.to(msg.room.socket_room).emit('message', msg);
       else
         _socket.broadcast.emit('message', msg);
       return;
     }
 
     if (msg.room != null)
-      this.io.to(msg.room.id).emit('message', msg);
+      this.io.to(msg.room.socket_room).emit('message', msg);
     else
       this.io.emit('message', msg);
+  }
+
+  send_File({
+    msg: msg,
+    url: url,
+    name: name
+  }) {
+    let extname = path.extname(url).toLocaleLowerCase();
+    if (extname == '.jpg' ||
+      extname == '.png' ||
+      extname == '.gif' ||
+      extname == '.bmp' ||
+      extname == '.ico' ||
+      extname == '.jpeg' ||
+      extname == '.svg')
+      msg.value = `<a href="${url}" target="_blank"><img src="${url}" width="300px" name="pic_msg" title="${name}" alt="${name}"/></a>`;
+    else
+      msg.value = `<img src="/images/file.png" style="margin-right:5px;width:32px" /><a href="${url}"  name="file_msg">${name}</a>`;
+    this.send(msg);
   }
 
   send_WelcomeToThisRoom({
@@ -95,15 +110,16 @@ class messager {
     socket.emit('message', this.botMessage(
       `欢迎进入  <a href="${roomUrl}" target="_blank">${roomName}</a>,
     当前总计有 ${userCount} 位 Newgger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
- 
-    socket.emit('message',this.botMessage(`N-Chat用户指南: 
+
+    socket.emit('message', this.botMessage(`N-Chat用户指南: 
     <url>
     <li>拖拽发送图片</li> 
+    <li>双击窗口切换全屏模式</li>
     <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
     <li>发送 <font color="green">#help</font> 获得帮助</li>
     <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
     </ul>`));
- 
+
   };
 
   send_SomebodyJoinSomeRoom({
@@ -167,10 +183,10 @@ class messager {
     this.send(msg);
   }
 
-  send_ToAll(_msg,_socket) {
+  send_ToAll(_msg, _socket) {
     if (_msg.value.lastIndexOf('@all') < 0) return;
     _msg.room = null;
-    this.send(_msg,_socket);
+    this.send(_msg, _socket);
   }
 
   botMessage(value) {
@@ -201,7 +217,7 @@ class message {
     this.sender = sender;
     this.receiver = receiver;
     this.room = room;
-    this.time = time || (new Date()).toUTCString();
+    this.time = time || (new Date()).getTime();
   }
 }
 module.exports.messager = messager;

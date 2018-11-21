@@ -29,11 +29,6 @@ var chatRoom = function (container, server) {
 
     var initCurrentRoom = function () {
 
-        /*var id = d3.select('meta[name=ajs-page-id]')== null?0:d3.select('meta[name=ajs-page-id]').attr('content');
-        var name =   d3.select('meta[name=ajs-page-title]')== null?null:d3.select('meta[name=ajs-page-title]').attr('content'); 
-        var url = id==0?d3.select('meta[name=ajs-base-url]').attr("content") :d3.select('meta[name=ajs-base-url]').attr("content") + '/pages/viewpage.action?pageId=' + id;
-        var spaceName= d3.select('meta[name=ajs-space-name]')== null?null:d3.select('meta[name=ajs-space-name]').attr('content'); 
-        var spaceKey= d3.select('meta[name=ajs-space-key]')== null?null:d3.select('meta[name=ajs-space-key]').attr('content'); */
         var id = getQueryString('roomid') != null ? getQueryString('roomid') : '19821028';
         var type = getQueryString('roomtype') != null ? getQueryString('roomtype') : 'standalone';
         var name = getQueryString('roomname') != null ? getQueryString('roomname') : 'N-Chat';
@@ -69,7 +64,7 @@ var chatRoom = function (container, server) {
             var li = d3.select("#rooms").append('li');
 
             li.append('img')
-                .attr('src', '/images/' + _room.type + '.png')
+                .attr('src', _room.iconUrl)
                 .attr('class', 'img-circle')
                 .style('height', '30px')
                 .style('width', '30px')
@@ -80,11 +75,16 @@ var chatRoom = function (container, server) {
                 .attr('href', _room.url)
                 .attr('target', '_blank')
                 .style('margin-right', '10px')
-                .html(_room.name)
+                .style('overflow', 'hidden')
+                .attr('title', _room.name)
+                .html(_room.name);
 
             li.append('span')
                 .attr('class', 'badge')
                 .html(_room.userManager.users.length);
+
+            if (_room.id == room.id && _room.type == room.type)
+                d3.select("#room_icon").attr('src', _room.iconUrl);
 
         });
     }
@@ -213,9 +213,11 @@ var chatRoom = function (container, server) {
         EventUtil.addHandler(uploadArea, "drop", uploadFile);
     }
 
-    window.onbeforeunload = function(event) { 
+    window.onbeforeunload = function (event) {
         socket.disconnect();
-    }; 
+    };
+
+    d3.select('body').on('dblclick', swithFullScreen);
 
     init();
 }
@@ -250,11 +252,10 @@ var login_ne = function (callback) {
     var tokenParam = getQueryString('t');
 
     var m_token = getCookie("loginToken") || tokenParam;
-    if (m_token) {
 
+    if (m_token) {
         if (tokenParam)
             setCookie("loginToken", tokenParam);
-
         $.ajax({
             url: "http://apis.newegg.org/framework/v1/keystone/sso-auth-data",
             type: "POST",
@@ -282,49 +283,6 @@ var login_ne = function (callback) {
         var m_url = "https://account.newegg.org/login?redirect_url=" + encodeURIComponent(window.location.href);
         window.location = m_url;
     }
-
-    /*
-        $.post("http://apis.newegg.org/framework/v1/keystone/sso-auth-data", {
-                token: m_token
-            })
-            .then(function (reponse) {
-                if (reponse.status === 200 && reponse.data) {
-                    window.currentUser = reponse.data.UserInfo;
-                    callback(reponse.data.UserInfo);
-                }
-            }, function (error) {
-                if (error.data && error.data.Message && error.data.Message === "Invalid token.") {
-                    setCookie("loginToken", "");
-                    window.location = window.location;
-                } else {
-                    alert("Auto login failed, please contact administrator.");
-                }
-            });*/
-
-    /*
-        Newegg SSO User Info
-        {
-        "CacheKey": "d751713988987e9331980363e24189ce",
-        "LoginResult": false,
-        "UserInfo": {
-            "UserID": "tw14",
-            "UserName": "tw14",
-            "Avatar": "http://apis.newegg.org/common/v1/domain/user/tw14/avatar",
-            "FullName": "Tony.J.Wang",
-            "DisplayName": "Tony.J.Wang (g-mis.cncd02.Newegg) 42263",
-            "EmailAddress": "Tony.J.Wang@newegg.com",
-            "EmployeeID": "06860025",
-            "Country": "China",
-            "Company": "NESC",
-            "Department": "CN CD NESC MIS",
-            "TelephoneNumber": "818642263",
-            "Title": "Mgr, MIS"
-        },
-        "RoleAttributes": [],
-        "Roles": [],
-        "Functions": []
-        }
-        */
 }
 
 var setCookie = function (key, value) {
@@ -337,3 +295,39 @@ var getCookie = function (key) {
     var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
     return keyValue ? keyValue[2] : null;
 }
+function swithFullScreen() {
+    if (d3.select('#cb-container').attr('class') == 'col-md-9 column') {
+        d3.select('#cb-container').attr('class', 'col-md-12 column');
+        d3.select('#menu').style('display', 'none');
+        launchFullScreen(document.documentElement);
+    } else {
+        d3.select('#cb-container').attr('class', 'col-md-9 column');
+        d3.select('#menu').style('display', 'block');
+        cancelFullScreen();
+    }
+}
+
+function launchFullScreen(element) {  
+    if (element.requestFullscreen) {
+       element.requestFullscreen();
+     } else if (element.msRequestFullscreen) {
+       element.msRequestFullscreen();
+     } else if (element.mozRequestFullScreen) {
+       element.mozRequestFullScreen();
+     } else if (element.webkitRequestFullscreen) {
+       element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+     }
+ }
+
+
+ function cancelFullScreen() {  
+    if (document.exitFullscreen) {
+       document.exitFullscreen();
+     } else if (document.msExitFullscreen) {
+       document.msExitFullscreen();
+     } else if (document.mozCancelFullScreen) {
+       document.mozCancelFullScreen();
+     } else if (document.webkitExitFullscreen) {
+       document.webkitExitFullscreen();
+     }
+ }  

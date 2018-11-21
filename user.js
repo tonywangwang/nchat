@@ -37,30 +37,25 @@ class manager {
   };
 
   remove(_user) {
-    let u = _.findLast(this.users, {
-      id: _user.id
+    _.remove(this.users, (_u) => {
+      return _u.id == _user.id
     });
-    if (u != undefined) this.users.splice(u)
-    return u;
   };
 
   sendUsers(_room) {
     //向指定房间用户同步在该房间的在线users
     if (_room != undefined)
-      this.io.to(_room.id).emit('room_users', _room.userManager.users);
+      this.io.to(_room.socket_room).emit('room_users', _room.userManager.users);
     else
       //向所有人同步所有在线users
       this.io.emit('users', this.users);
   }
 
   removeBySid(sid) {
-    let u = _.findLast(this.users, {
-      sid: sid
-    });
-
-    if (u != undefined) this.users.splice(u)
-
-    return u;
+   return _.remove(this.users, (_u) => {
+      _u.removeSocket(sid);
+      return _u.sockets.length == 0
+    }).pop();
   };
 
   getById(_id) {
@@ -77,16 +72,29 @@ class user {
     id,
     name,
     desc,
-    iconUrl,
-    sid
+    iconUrl
   }) {
     this.id = id;
     this.name = name;
     this.desc = desc;
     this.iconUrl = iconUrl;
-    this.sid = sid;
+    this.sockets = [];
     this.aciton = this.aciton.bind(this);
+    this.addSocket = this.addSocket.bind(this);
+    this.removeSocket = this.removeSocket.bind(this);
   }
+
+  addSocket(sid) {
+    if (this.sockets.lastIndexOf(sid) >= 0) return;
+    this.sockets.push(sid);
+  }
+
+  removeSocket(sid) {
+    _.remove(this.sockets, (_s) => {
+      return _s == sid
+    })
+  }
+
   aciton() {}
 }
 

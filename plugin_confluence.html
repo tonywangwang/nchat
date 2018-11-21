@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<head>
+    <title>N-Chat Conluence Plugin</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="http://10.16.92.10/stylesheets/bootstrap.min.css">
+    <script src="http://10.16.92.10/javascripts/socket.io-1.2.0.js"></script>
+</head>
+
+<body>
+    <div style="z-index:100;position:fixed;;margin-top:85vh;margin-left:90vw;">
+        <a href="#" id="entry" target="_blank">
+            <img style="width:78px" id='chat_entry_icon'>
+            <span class="badge" style="font-size:24px" id="users">0/0</span>
+
+        </a>
+    </div>
+
+</body>
+
+</html>
+
+<script type="text/javascript">
+    $(function () {
+        chatRoom('10.16.92.10:80');
+    });
+
+    var chatRoom = function (host) {
+        $('#chat_entry_icon').attr('src', 'http://' + host + '/images/chat_entry.png');
+        var socket, room, user, users = [],
+            room_users = [];
+        var initCurrentUser = function (callback) {
+
+            var _user = {
+                id: $('meta[name=ajs-remote-user]').attr('content'),
+                name: $('meta[name=ajs-current-user-fullname]').attr('content'),
+                iconUrl: window.location.host + $('meta[name=ajs-current-user-avatar-url]').attr('content'),
+            }
+
+            $("#user_icon")
+                .attr('src', _user.iconUrl)
+                .attr('title', _user.name)
+        }
+
+        var initCurrentRoom = function () {
+
+            var id = $('meta[name=ajs-space-key]').attr('content') != undefined ? $('meta[name=ajs-space-key]')
+                .attr('content') : 'C19821028';
+            var type = 'confluence';
+            var name = $('meta[name=ajs-space-name]').attr('content') != null ? $('meta[name=ajs-space-name]').attr(
+                'content') : 'Confluence';
+            var url = 'http://' + host + '/?roomid=' + id + '&roomname=' + name + '&roomtype=' + type;
+            var iconUrl = $('img[class=avatar-img]').attr('src') != null ? 'http://' + window.location.host + $(
+                'img[class=avatar-img]').attr('src') : '/images/' + type + '.png';
+
+            var _room = {
+                id: id,
+                name: name,
+                type: type,
+                iconUrl: iconUrl,
+                url: url
+            };
+
+            $('#entry').attr('href', _room.url);
+
+            return _room;
+        }
+
+        var initUserList = function (_users) {
+            $('#users').html(room_users.length + '/' + _users.length);
+        };
+
+        var initUserInRoom = function (_users) {
+            $('#users').html(_users.length + '/' + users.length);
+        }
+
+        var socketEvent = function () {
+
+            socket = io.connect('ws://' + host);
+
+            socket.emit('plugin_join', user, room);
+
+            socket.on('users', function (_users) {
+                initUserList(_users);
+                users = _users;
+            });
+
+            socket.on('room_users', function (_users) {
+                initUserInRoom(_users);
+                room_users = _users;
+
+            });
+        }
+
+        var init = function () {
+            user = initCurrentUser();
+            room = initCurrentRoom();
+            socketEvent();
+        }
+
+        init();
+    }
+</script>

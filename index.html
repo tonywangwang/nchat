@@ -30,7 +30,7 @@
       </div>
     </div>
     <div class="row clearfix">
-      <div class="col-md-2 column" >
+      <div class="col-md-3 column" id='menu' >
         <div class="panel-group" id="panel-242930">
           <div class="panel panel-default">
             <div class="panel-heading">
@@ -57,7 +57,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-10 column" id="container">
+      <div class="col-md-9 column" id="container">
       </div>
     </div>
   </div>
@@ -65,7 +65,6 @@
 </html>
 <script type="text/javascript">
   $(function () {
-    chatRoom('container', 'ws://10.16.92.10');
-    //chatRoom('container', 'ws://localhost');
+    chatRoom('container', 'ws://' + window.location.host);
   });
 </script>

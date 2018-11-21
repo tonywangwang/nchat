@@ -1,8 +1,8 @@
 const negConfig = require('neg-config');
 
 let config = {
-  "port": 80,
-  "database": "cloudstore",
+  "port": 3000,
+  "database": "array",
   "message": {
     "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/message?pageSize=100&sortField=time&sort=desc",
     "loadHistoryMsgCount": 100

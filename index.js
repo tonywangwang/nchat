@@ -5,15 +5,15 @@ const server = http.Server(app);
 const path = require('path');
 const io = require('socket.io')(server);
 const multipart = require('connect-multiparty');
-const nc = require('./nchat');
 const file = require('./file');
 const config = require('./config');
 
-config.init('negConfig', startup)
+config.init('local', startup)
 
 
 function startup() {
 
+  const nc = require('./nchat'); // denpends config
   let nchat = new nc(io);
 
   app.use(express.static(path.join(__dirname, 'public')));
@@ -27,8 +27,11 @@ function startup() {
     let msg;
     f.upload(req.files, (d) => {
       msg = JSON.parse(req.body.message);
-      msg.value = '<img src="' + d.url + '" width="400px"/>';
-      nchat.messager.send(msg)
+      nchat.messager.send_File({
+        msg: msg,
+        url: d.url,
+        name: d.name
+      })
     });
     res.end();
   });
