@@ -89,3 +89,19 @@ node index
 ```
 
 http://localhost
+
+
+## 开发日志
+
+### 2018.11.15
+* standlone 模式上线
+
+### 2018.11.22
+* confluence plugin 上线内测
+
+### 2018.11.23
+* 用户输入内容 encode
+* 修复 “token 处理不正确，导致Login Failed的问题”
+* UserName 格式调整：FullName->FullName (Title)
+* Room List按照在线人数排序
+* 优化room创建和信息加载机制

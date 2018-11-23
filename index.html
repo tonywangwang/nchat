@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width">
   <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
   <link rel="stylesheet" href="/stylesheets/chatUI.css">
+  <script src="/javascripts/lodash.min.js"></script>
   <script src="/javascripts/socket.io-1.2.0.js"></script>
   <script src="/javascripts/jquery-1.11.1.js"></script>
   <script src="/javascripts/d3.v4.min.js"></script>
@@ -22,7 +23,7 @@
       <div class="col-md-12 column">
         <div class="page-header" style="padding:0px;margin:auto;margin-bottom:20px">
           <h1>
-            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;" />
+            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;"/>
             <span id='room_name' style="color:silver;margin-right:10px"></span>
             <small id='room_desc' style="font-size:16px">N-Chat</small>
             <img src="/images/favicon.png" class="img-circle" id="user_icon" style="height:40px;float:right;margin-right:20px;vertical-align:middle" />
@@ -69,4 +70,5 @@
   $(function () {
     chatRoom('cb-container', 'ws://' + window.location.host);
   });
+
 </script>

@@ -16,6 +16,15 @@ class manager {
     this.removeUserBySid = this.removeUserBySid.bind(this);
   }
 
+  
+  get(_room)
+  {
+    return _.findLast(this.rooms, {
+      id: _room.id,
+      type: _room.type
+    });
+
+  }
   add(_room, _cb) {
     let r = _.findLast(this.rooms, {
       id: _room.id,
@@ -90,7 +99,7 @@ class room {
     iconUrl,
   }) {
     this.id = id || uuidv1();
-    this.name = name || 'Anonymous';
+    this.name = name || 'N-Chat';
     this.desc = desc || this.name;
     this.type = type || 'standalone';
     this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;

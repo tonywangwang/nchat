@@ -8,20 +8,20 @@ var chatRoom = function (container, server) {
 
     var initCurrentUser = function (callback) {
         var _user = {
-            id: 'tw7',
-            name: 'Tony.J.Wang2',
+            id: 'tw14',
+            name: 'Tony.J.Wang',
             iconUrl: 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2098054987,2271776465&fm=26&gp=0.jpg'
         }
 
-        d3.select("#user_icon")
-        .attr('src', _user.iconUrl)
-        .attr('title', _user.name);
+        /* d3.select("#user_icon")
+         .attr('src', _user.iconUrl)
+         .attr('title', _user.name);
 
-        callback(_user);
+         callback(_user);*/
 
-      /*  login_ne(function (userInfo) {
+        login_ne(function (userInfo) {
             _user.id = userInfo.UserID;
-            _user.name = userInfo.FullName;
+            _user.name = userInfo.FullName + ' (' + userInfo.Title + ')';
             _user.iconUrl = userInfo.Avatar;
 
             d3.select("#user_icon")
@@ -30,12 +30,11 @@ var chatRoom = function (container, server) {
 
             if (callback != undefined)
                 callback(_user);
-        });*/
+        });
 
-    
     }
 
-    var initCurrentRoom = function () {
+    var initCurrentRoom = function (callback) {
 
         var id = getQueryString('roomid') != null ? getQueryString('roomid') : '19821028';
         var type = getQueryString('roomtype') != null ? getQueryString('roomtype') : 'standalone';
@@ -43,40 +42,71 @@ var chatRoom = function (container, server) {
         var url = '/?roomid=' + id + '&roomname=' + name + '&roomtype=' + type;
         var iconUrl = '/images/' + type + '.png'
 
-        var _room = {
+        room = {
             id: id,
-            name: name,
             type: type,
-            iconUrl: iconUrl,
-            url: url
-        };
+            name: name,
+            url: url,
+            iconUrl: iconUrl
+        }
 
-        d3.select('title').html(name);
-        d3.select("#room_name").html(name);
-        d3.select("#room_desc").html('N-Chat Alpha Powered by Tony.J.Wang');
-        d3.select("#room_icon")
-            .attr('src', _room.iconUrl)
-            .attr('title', _room.name)
+        renderRoom();
 
-        return _room;
+        $.get('http://' + window.location.host + '/room?roomid=' + id + '&roomtype=' + type,
+            function (data) {
+                if (data) {
+                    room = data;
+                    renderRoom();
+                }
+            });
+
+        function renderRoom() {
+            d3.select('title').html(room.name);
+            d3.select("#room_name").html(room.name);
+            d3.select("#room_desc").html('N-Chat Alpha Powered by Tony.J.Wang');
+            d3.select("#room_icon")
+                .attr('src', room.iconUrl)
+                .attr('title', room.name)
+        }
+    }
+
+
+    var createRoom = function (_room) {
+        $.ajax({
+            type: "post",
+            url: 'http://' + window.location.host + '/room',
+            data: JSON.stringify(_room),
+            async: true,
+            contentType: 'application/json',
+            success: function (r) {
+                console.log('提交房间注册信息成功');
+            },
+            error: function (r) {
+                console.log('提交房间注册信息失败');
+            }
+        });
+
     }
 
     var initRoomList = function (_rooms) {
 
         d3.select("#rooms").html('');
-
         d3.select("#rooms_count").style('margin-left', '10px').html(_rooms.length);
 
-        _rooms.forEach(function (_room) {
+        _.orderBy(_rooms, [function (r) {
+            return r.userManager.users.length
+        }, 'name'], ['desc', 'asc']).forEach(function (_room) {
 
             var li = d3.select("#rooms").append('li');
+
+            li.style('margin-bottom', '2px');
 
             li.append('img')
                 .attr('src', _room.iconUrl)
                 .attr('class', 'img-circle')
                 .style('height', '30px')
                 .style('width', '30px')
-                .style('margin-right', '10px')
+                .style('margin-right', '5px')
                 .style('vertical-align', 'middle');
 
             li.append('a')
@@ -91,8 +121,10 @@ var chatRoom = function (container, server) {
                 .attr('class', 'badge')
                 .html(_room.userManager.users.length);
 
-            if (_room.id == room.id && _room.type == room.type)
-                d3.select("#room_icon").attr('src', _room.iconUrl);
+            /*if (_room.id == room.id && _room.type == room.type) {
+                room = _room;
+                initCurrentRoom();
+            }*/
 
         });
     }
@@ -107,6 +139,8 @@ var chatRoom = function (container, server) {
             d3.select("#room_users")
 
             var li = d3.select("#room_users").append('li')
+
+            li.style('margin-bottom', '2px');
 
             li.append('img')
                 .attr('src', _user.iconUrl)
@@ -168,7 +202,7 @@ var chatRoom = function (container, server) {
 
         ui.addBubble({
             type: 'text',
-            value: msg,
+            value: htmlEncode(msg),
             class: 'human',
             sender: user,
             time: (new Date()).toLocaleTimeString(),
@@ -208,24 +242,27 @@ var chatRoom = function (container, server) {
         });
 
     }
+
     var init = function () {
+
+        window.onbeforeunload = function (event) {
+            socket.disconnect();
+        };
+
+        d3.select('body').on('dblclick', swithFullScreen);
+
         initCurrentUser(function (_user) {
             user = _user;
+            initCurrentRoom();
             ui.showInput(sendMessage);
             socketEvent();
-            room = initCurrentRoom();
+
         });
 
         EventUtil.addHandler(uploadArea, "dragenter", uploadFile);
         EventUtil.addHandler(uploadArea, "dragover", uploadFile);
         EventUtil.addHandler(uploadArea, "drop", uploadFile);
     }
-
-    window.onbeforeunload = function (event) {
-        socket.disconnect();
-    };
-
-    d3.select('body').on('dblclick', swithFullScreen);
 
     init();
 }
@@ -271,7 +308,8 @@ var login_ne = function (callback) {
                 "Authorization": "Bearer giOjDe8n4nEm7qOw4SrRmgMHUgotaAjb7c7OnFQ0",
                 "If-Modified-Since": "Mon, 26 Jul 1997 05:00:00 GMT",
                 "Cache-Control": "no-cache",
-                "Pragma": "no-cache"
+                "Pragma": "no-cache",
+                "Access-Control-Allow-Origin": "*"
             },
             dataType: 'json',
             data: {
@@ -282,7 +320,7 @@ var login_ne = function (callback) {
                 callback(data.UserInfo);
             },
             error: function () {
-                setCookie("loginToken", null);
+                setCookie("loginToken", "");
                 alert("NE SSO login failed");
             }
         });
@@ -303,7 +341,8 @@ var getCookie = function (key) {
     var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
     return keyValue ? keyValue[2] : null;
 }
-function swithFullScreen() {
+
+var swithFullScreen = function () {
     if (d3.select('#cb-container').attr('class') == 'col-md-9 column') {
         d3.select('#cb-container').attr('class', 'col-md-12 column');
         d3.select('#menu').style('display', 'none');
@@ -315,27 +354,33 @@ function swithFullScreen() {
     }
 }
 
-function launchFullScreen(element) {  
+var launchFullScreen = function (element) {
     if (element.requestFullscreen) {
-       element.requestFullscreen();
-     } else if (element.msRequestFullscreen) {
-       element.msRequestFullscreen();
-     } else if (element.mozRequestFullScreen) {
-       element.mozRequestFullScreen();
-     } else if (element.webkitRequestFullscreen) {
-       element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-     }
- }
+        element.requestFullscreen();
+    } else if (element.msRequestFullscreen) {
+        element.msRequestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullscreen) {
+        element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+}
 
-
- function cancelFullScreen() {  
+var cancelFullScreen = function () {
     if (document.exitFullscreen) {
-       document.exitFullscreen();
-     } else if (document.msExitFullscreen) {
-       document.msExitFullscreen();
-     } else if (document.mozCancelFullScreen) {
-       document.mozCancelFullScreen();
-     } else if (document.webkitExitFullscreen) {
-       document.webkitExitFullscreen();
-     }
- }  
+        document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    }
+}
+
+var htmlEncode = function (html) {
+    return $("<div>").text(html).html();
+}
+var htmlDecode = function (encodedHtml) {
+    return $("<div>").html(encodedHtml).text();
+}

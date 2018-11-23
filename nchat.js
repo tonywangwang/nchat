@@ -3,6 +3,7 @@ const um = require('./user').manager;
 const msgr = require('./message').messager;
 const rm = require('./room').manager;
 const room = require('./room').room;
+const html= require('html-entities').AllHtmlEntities;
 
 class nchat {
   constructor(io) {
@@ -30,6 +31,8 @@ class nchat {
 
   _message(_socket) {
     _socket.on('message', (_msg) => {
+      //用户发送的消息全部进行html encode
+      _msg.value = html.encode(_msg.value);
       _msg.room = new room(_msg.room);
       this.messager.send(_msg, _socket);
       this._actions(_msg, _socket);

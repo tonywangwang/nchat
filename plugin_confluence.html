@@ -4,15 +4,15 @@
     <title>N-Chat Conluence Plugin</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="http://10.16.92.10/stylesheets/bootstrap.min.css">
-    <script src="http://10.16.92.10/javascripts/socket.io-1.2.0.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.2.0/socket.io.min.js"></script>
 </head>
 
 <body>
     <div style="z-index:100;position:fixed;;margin-top:85vh;margin-left:90vw;">
         <a href="#" id="entry" target="_blank">
             <img style="width:78px" id='chat_entry_icon'>
-            <span class="badge" style="font-size:24px" id="users">0/0</span>
+            <span class="badge" style="font-size:24px" id="users" style="display:block">0/0</span>
         </a>
     </div>
 
@@ -22,7 +22,7 @@
 
 <script type="text/javascript">
     $(function () {
-        chatRoom('10.16.92.10:80');
+        chatRoom('10.16.75.23:8210');
     });
 
     var chatRoom = function (host) {
@@ -63,6 +63,20 @@
 
             $('#entry').attr('href', _room.url);
 
+            $.ajax({
+            type: "post",
+            url: 'http://' + host + '/room',
+            data: JSON.stringify(_room),
+            async: true,
+            contentType: 'application/json',
+            success: function (r) {
+            console.log('提交房间注册信息成功');
+            },
+            error: function (r) {
+            console.log('提交房间注册信息失败');
+            }
+            });
+
             return _room;
         }
 
@@ -95,7 +109,7 @@
         var init = function () {
             user = initCurrentUser();
             room = initCurrentRoom();
-            socketEvent();
+            //socketEvent();
         }
 
         init();

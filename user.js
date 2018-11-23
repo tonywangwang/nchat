@@ -3,11 +3,6 @@ const config = require('./config').get();
 
 class manager {
   constructor(_io) {
-    this.bot = {
-      id: 'xiaoen',
-      name: '程序员鼓励师小恩',
-      iconUrl: 'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=3774486761,2283055156&fm=26&gp=0.jpg',
-    };
     this.io = _io;
     this.users = [];
     this.add = this.add.bind(this);

@@ -7,19 +7,40 @@ const io = require('socket.io')(server);
 const multipart = require('connect-multiparty');
 const file = require('./file');
 const config = require('./config');
+const bodyParser = require('body-parser');
 
-config.init('local', startup)
-
+config.init('negConfig', startup)
 
 function startup() {
 
   const nc = require('./nchat'); // denpends config
   let nchat = new nc(io);
 
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({
+    extended: false
+  }));
   app.use(express.static(path.join(__dirname, 'public')));
 
   app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
+  });
+
+  app.post('/room', function (req, res) {
+    let room = req.body;
+    room = nchat.roomManager.add(room);
+    res.json(room);
+  });
+
+  app.get('/room', function (req, res) {
+    if (!req.query['roomid'] || !req.query['roomtype'])
+      res.end();
+    let room = {
+      id: req.query['roomid'],
+      type: req.query['roomtype']
+    };
+    room = nchat.roomManager.get(room);
+    res.json(room);
   });
 
   app.post("/uploadFile", multipart(), function (req, res) {
