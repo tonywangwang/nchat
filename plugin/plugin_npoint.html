@@ -1,0 +1,67 @@
+<div style="z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;">
+    <img style="width:78px;cursor:pointer" id='chat_entry_icon' title="Open N-Chat">
+</div>
+
+
+<script type="text/javascript">
+    $(function () {
+        chatRoom('10.16.84.125:3000');
+    });
+
+    var room, host
+    var chatRoom = function (_host) {
+        host = _host;
+        $('#chat_entry_icon').attr('src', '//' + _host + '/images/chat_entry.png');
+
+        var initCurrentRoom = function () {
+
+            var id = window.location.href;
+            var type = 'npoint';
+            var name = $('title').html() != null ? $('title').html() : '积点商城';
+            var url = '/?roomid=' + id + '&roomtype=' + type;
+            var iconUrl = '/images/' + type + '.png';
+            var origin = window.location.href
+            var _url = '//' + host + url;
+
+            _room = {
+                id: id,
+                name: name,
+                type: type,
+                iconUrl: iconUrl,
+                url: url,
+                origin: origin,
+                _url:_url
+            };
+
+            $('#chat_entry_icon').attr('onclick', 'openRoom()');
+
+            return _room;
+        }
+
+        var init = function () {
+            room = initCurrentRoom();
+        }
+
+        init();
+
+    }
+
+    var openRoom = function () {
+
+        $.ajax({
+            type: "post",
+            url: '//' + host + '/room',
+            data: JSON.stringify(room),
+            async: true,
+            contentType: 'application/json',
+            success: function (r) {
+                console.log('N-Chat:提交房间注册信息成功');
+                window.open(room._url);
+            },
+            error: function (r) {
+                console.log('N-Chat:提交N-Chat房间注册信息失败');
+                alert('N-Chat:提交N-Chat房间注册信息失败');
+            }
+        });
+    }
+</script>

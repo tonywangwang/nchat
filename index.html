@@ -3,18 +3,18 @@
 <head>
   <title>N-Chat</title>
   <meta charset="utf-8">
-  <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
   <meta name="viewport" content="width=device-width">
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
   <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
   <link rel="stylesheet" href="/stylesheets/chatUI.css">
   <script src="/javascripts/lodash.min.js"></script>
   <script src="/javascripts/socket.io-1.2.0.js"></script>
   <script src="/javascripts/jquery-1.11.1.js"></script>
-  <script src="/javascripts/d3.v4.min.js"></script>
-  <script src="/javascripts/chatUI-d3.min.js"></script>
-  <script src="/javascripts/EventUtil.js"></script>
-  <script src="/javascripts/nchat-standalone.js"></script>
   <script src="/javascripts/bootstrap.min.js"></script>
+  <script src="/javascripts/d3.v4.min.js"></script>
+  <script src="/javascripts/EventUtil.js"></script>
+  <script src="/javascripts/chatUI-d3.min.js"></script>
+  <script src="/javascripts/nchat-standalone.js"></script>
 </head>
 
 <body>
@@ -24,7 +24,8 @@
         <div class="page-header" style="padding:0px;margin:auto;margin-bottom:20px">
           <h1>
             <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;"/>
-            <span id='room_name' style="color:silver;margin-right:10px"></span>
+            <span id='room_name' style="color:silver;"></span>
+            <a href="#" target="_blank" title="Go to Origin" id="origin_link"><img src="/images/origin.png" id="origin_icon" style="height:25px;vertical-align:middle;"/></a>
             <small id='room_desc' style="font-size:16px">N-Chat</small>
             <img src="/images/favicon.png" class="img-circle" id="user_icon" style="height:40px;float:right;margin-right:20px;vertical-align:middle" />
           </h1>
@@ -68,7 +69,7 @@
 </html>
 <script type="text/javascript">
   $(function () {
-    chatRoom('cb-container', 'ws://' + window.location.host);
+    chatRoom('cb-container', '//' + window.location.host);
   });
 
 </script>

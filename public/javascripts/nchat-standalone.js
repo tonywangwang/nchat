@@ -39,20 +39,22 @@ var chatRoom = function (container, server) {
         var id = getQueryString('roomid') != null ? getQueryString('roomid') : '19821028';
         var type = getQueryString('roomtype') != null ? getQueryString('roomtype') : 'standalone';
         var name = getQueryString('roomname') != null ? getQueryString('roomname') : 'N-Chat';
-        var url = '/?roomid=' + id + '&roomname=' + name + '&roomtype=' + type;
-        var iconUrl = '/images/' + type + '.png'
+        var url = '/?roomid=' + id + '&roomtype=' + type;
+        var iconUrl = getQueryString('iconUrl') != null ? getQueryString('iconUrl') :'/images/' + type + '.png'
+        var origin = getQueryString('origin');
 
         room = {
             id: id,
             type: type,
             name: name,
             url: url,
-            iconUrl: iconUrl
+            iconUrl: iconUrl,
+            origin:origin
         }
 
         renderRoom();
 
-        $.get('http://' + window.location.host + '/room?roomid=' + id + '&roomtype=' + type,
+        $.get('/room?roomid=' + id + '&roomtype=' + type,
             function (data) {
                 if (data) {
                     room = data;
@@ -66,7 +68,14 @@ var chatRoom = function (container, server) {
             d3.select("#room_desc").html('N-Chat Alpha Powered by Tony.J.Wang');
             d3.select("#room_icon")
                 .attr('src', room.iconUrl)
-                .attr('title', room.name)
+                .attr('title', room.name);
+
+            if(room.origin && room.type!='stanalone'){
+                d3.select('#origin_link').attr('href',room.origin);
+                d3.select('#origin_link').style('display','inline');
+            }
+            else
+                d3.select('#origin_link').style('display','none');
         }
     }
 
@@ -74,7 +83,7 @@ var chatRoom = function (container, server) {
     var createRoom = function (_room) {
         $.ajax({
             type: "post",
-            url: 'http://' + window.location.host + '/room',
+            url: '//' + window.location.host + '/room',
             data: JSON.stringify(_room),
             async: true,
             contentType: 'application/json',
@@ -176,6 +185,9 @@ var chatRoom = function (container, server) {
             $.ajax({
                 type: "post",
                 url: "/uploadFile",
+                headers: {
+                    "Access-Control-Allow-Origin":"*"
+                },
                 data: formData,
                 async: false,
                 cache: false,
@@ -277,20 +289,6 @@ var getQueryString = function (name) {
     return null;
 }
 
-var login_confluence = function (callback) {
-
-    var id = d3.select('meta[name=ajs-remote-user]').attr('content');
-    var name = d3.select('meta[name=ajs-current-user-fullname]').attr('content');
-    var url = 'http://apis.newegg.org/common/v1/domain/user/' + id + '/avatar';
-
-    var _user = {
-        id: id,
-        name: name,
-        iconUrl: url
-    }
-
-    callback(_user);
-}
 
 var login_ne = function (callback) {
 
@@ -302,7 +300,7 @@ var login_ne = function (callback) {
         if (tokenParam)
             setCookie("loginToken", tokenParam);
         $.ajax({
-            url: "http://apis.newegg.org/framework/v1/keystone/sso-auth-data",
+            url: "//apis.newegg.org/framework/v1/keystone/sso-auth-data",
             type: "POST",
             headers: {
                 "Authorization": "Bearer giOjDe8n4nEm7qOw4SrRmgMHUgotaAjb7c7OnFQ0",

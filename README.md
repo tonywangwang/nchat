@@ -105,3 +105,8 @@ http://localhost
 * UserName 格式调整：FullName->FullName (Title)
 * Room List按照在线人数排序
 * 优化room创建和信息加载机制
+
+### 2018.11.24
+* 解决跨域问题
+* 添加Plugin模式下Room的外部链接(originUrl)
+* 支持HTTPS

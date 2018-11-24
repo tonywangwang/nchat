@@ -113,7 +113,7 @@ class messager {
 
     socket.emit('message', this.botMessage(`N-Chat用户指南: 
     <url>
-    <li>拖拽发送图片</li> 
+    <li>拖拽发送图片或者文件</li> 
     <li>双击窗口切换全屏模式</li>
     <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
     <li>发送 <font color="green">#help</font> 获得帮助</li>
@@ -155,7 +155,7 @@ class messager {
     if (_msg.value.lastIndexOf('#help') < 0) return;
     let msg = this.botMessage(`N-Chat用户指南: 
     <url>
-    <li>拖拽发送图片</li> 
+    <li>拖拽发送图片或者文件</li> 
     <li>双击窗口切换全屏模式</li>
     <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
     <li>发送 <font color="green">#help</font> 获得帮助</li>

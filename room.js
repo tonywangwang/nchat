@@ -97,6 +97,7 @@ class room {
     type,
     url,
     iconUrl,
+    origin
   }) {
     this.id = id || uuidv1();
     this.name = name || 'N-Chat';
@@ -104,6 +105,7 @@ class room {
     this.type = type || 'standalone';
     this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
     this.iconUrl = iconUrl || '/images/' + this.type + '.png';
+    this.origin = origin;
     this.socket_room = this.type + '_' + this.id;
     this.userManager = new um();
   }

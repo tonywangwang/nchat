@@ -1,0 +1,56 @@
+<div style="z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;">
+    <img style="width:78px;cursor:pointer" id='chat_entry_icon' title="Open N-Chat">
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        chatRoom('10.16.75.23:8210');
+    });
+
+    var room, host
+    var chatRoom = function (_host) {
+        host = _host;
+        $('#chat_entry_icon').attr('src', 'http://' + _host + '/images/chat_entry.png');
+
+        var initCurrentRoom = function () {
+
+            var id = $('meta[name=ajs-space-key]').attr('content') != undefined ? $('meta[name=ajs-space-key]')
+                .attr('content') : 'C19821028';
+            var type = 'confluence';
+            var name = $('meta[name=ajs-space-name]').attr('content') != null ? $('meta[name=ajs-space-name]').attr(
+                'content') : 'Confluence';
+            var iconUrl = $('img[class=avatar-img]').attr('src') != null ? '//' + window.location.host + $(
+                'img[class=avatar-img]').attr('src') : '/images/' + type + '.png';
+            var origin = window.location.href;
+            var url = '/?roomid=' + id + '&roomtype=' + type;
+            var _url = 'http://' + _host + '/?roomid=' + id + '&roomname=' + encodeURIComponent(name) +
+                '&roomtype=' + type +
+                '&iconUrl=' + iconUrl + '&origin=' + origin;
+
+            _room = {
+                id: id,
+                name: name,
+                type: type,
+                iconUrl: iconUrl,
+                url: url,
+                origin: origin,
+                _url: _url
+            };
+
+            $('#chat_entry_icon').attr('onclick', 'openRoom()');
+
+            return _room;
+        }
+
+        var init = function () {
+            room = initCurrentRoom();
+        }
+
+        init();
+
+    }
+
+    var openRoom = function () {
+        window.open(room._url);
+    }
+</script>

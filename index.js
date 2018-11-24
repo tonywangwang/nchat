@@ -1,21 +1,39 @@
+const config = require('./config');
 const express = require('express');
 const app = express();
 const http = require('http');
-const server = http.Server(app);
+const https = require('https');
+const cors = require('cors');
 const path = require('path');
-const io = require('socket.io')(server);
-const multipart = require('connect-multiparty');
-const file = require('./file');
-const config = require('./config');
 const bodyParser = require('body-parser');
+const multipart = require('connect-multiparty');
+const fs = require("fs");
+const file = require('./file');
 
-config.init('negConfig', startup)
+
+config.init('local', startup)
 
 function startup() {
 
-  const nc = require('./nchat'); // denpends config
+  let server;
+
+  if (config.get().https) {
+    const privateKey = fs.readFileSync(path.join(__dirname, './cert/private.pem'), 'utf8');
+    const certificate = fs.readFileSync(path.join(__dirname, './cert/file.crt'), 'utf8');
+    const credentials = {
+      key: privateKey,
+      cert: certificate
+    };
+    server = https.Server(credentials, app);
+  } else
+    server = http.Server(app);
+
+  const io = require('socket.io')(server);
+
+  const nc = require('./nchat');
   let nchat = new nc(io);
 
+  app.use(cors());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({
     extended: false
