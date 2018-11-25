@@ -103,7 +103,7 @@ class room {
     this.name = name || 'N-Chat';
     this.desc = desc || this.name;
     this.type = type || 'standalone';
-    this.url = url || `?roomid=${this.id}&roomtype=${this.type}&roomname=${encodeURIComponent(this.name)}`;
+    this.url = url || `?roomid=${this.id}&roomtype=${this.type}`;
     this.iconUrl = iconUrl || '/images/' + this.type + '.png';
     this.origin = origin;
     this.socket_room = this.type + '_' + this.id;

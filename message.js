@@ -3,7 +3,7 @@ const cloudStore = require('./cloudStore');
 const config = require('./config').get();
 const _ = require('lodash');
 const path = require('path');
-let user = require('./user').user;
+let bot = require('./bot').bot;
 
 
 class messager {
@@ -23,6 +23,7 @@ class messager {
     this.send_ToAll = this.send_ToAll.bind(this);
     this.send_File = this.send_File.bind(this);
     this.botMessage = this.botMessage.bind(this);
+    this.help = this.help.bind(this);
 
   }
 
@@ -111,14 +112,7 @@ class messager {
       `欢迎进入  <a href="${roomUrl}" target="_blank">${roomName}</a>,
     当前总计有 ${userCount} 位 Newgger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
 
-    socket.emit('message', this.botMessage(`N-Chat用户指南: 
-    <url>
-    <li>拖拽发送图片或者文件</li> 
-    <li>双击窗口切换全屏模式</li>
-    <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
-    <li>发送 <font color="green">#help</font> 获得帮助</li>
-    <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
-    </ul>`));
+    socket.emit('message', this.botMessage(this.help()));
 
   };
 
@@ -153,14 +147,7 @@ class messager {
 
   send_Help(_msg) {
     if (_msg.value.lastIndexOf('#help') < 0) return;
-    let msg = this.botMessage(`N-Chat用户指南: 
-    <url>
-    <li>拖拽发送图片或者文件</li> 
-    <li>双击窗口切换全屏模式</li>
-    <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
-    <li>发送 <font color="green">#help</font> 获得帮助</li>
-    <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
-    </ul>`);
+    let msg = this.botMessage(this.help());
     msg.room = _msg.room;
     this.send(msg);
   }
@@ -196,12 +183,22 @@ class messager {
   botMessage(value) {
     return new message({
       value: value,
-      sender: new user({
-        id: 'xiaoen',
-        name: '程序员鼓励师小恩',
-        iconUrl: 'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=3774486761,2283055156&fm=26&gp=0.jpg',
-      })
+      sender: (new bot()).self
     })
+  }
+
+  help()
+  {
+    return `N-Chat用户指南: 
+    <url>
+    <li>拖拽发送图片或者文件</li> 
+    <li>双击窗口切换全屏模式</li>
+    <li>点击消息输入框右边 "+",可发送的表情</li>
+    <li>消息中加上 <font color="green">@@</font> 联系小恩</li>
+    <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
+    <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
+    <li>发送 <font color="green">#help</font> 获得帮助</li>
+    </ul>`
   }
 }
 

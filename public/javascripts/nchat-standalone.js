@@ -13,24 +13,24 @@ var chatRoom = function (container, server) {
             iconUrl: 'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2098054987,2271776465&fm=26&gp=0.jpg'
         }
 
-        /* d3.select("#user_icon")
-         .attr('src', _user.iconUrl)
-         .attr('title', _user.name);
+        d3.select("#user_icon")
+            .attr('src', _user.iconUrl)
+            .attr('title', _user.name);
 
-         callback(_user);*/
+        callback(_user);
 
-        login_ne(function (userInfo) {
-            _user.id = userInfo.UserID;
-            _user.name = userInfo.FullName + ' (' + userInfo.Title + ')';
-            _user.iconUrl = userInfo.Avatar;
+        /*  login_ne(function (userInfo) {
+              _user.id = userInfo.UserID;
+              _user.name = userInfo.FullName + ' (' + userInfo.Title + ')';
+              _user.iconUrl = userInfo.Avatar;
 
-            d3.select("#user_icon")
-                .attr('src', _user.iconUrl)
-                .attr('title', _user.name);
+              d3.select("#user_icon")
+                  .attr('src', _user.iconUrl)
+                  .attr('title', _user.name);
 
-            if (callback != undefined)
-                callback(_user);
-        });
+              if (callback != undefined)
+                  callback(_user);
+          });*/
 
     }
 
@@ -40,7 +40,7 @@ var chatRoom = function (container, server) {
         var type = getQueryString('roomtype') != null ? getQueryString('roomtype') : 'standalone';
         var name = getQueryString('roomname') != null ? getQueryString('roomname') : 'N-Chat';
         var url = '/?roomid=' + id + '&roomtype=' + type;
-        var iconUrl = getQueryString('iconUrl') != null ? getQueryString('iconUrl') :'/images/' + type + '.png'
+        var iconUrl = getQueryString('iconUrl') != null ? getQueryString('iconUrl') : '/images/' + type + '.png'
         var origin = getQueryString('origin');
 
         room = {
@@ -49,7 +49,7 @@ var chatRoom = function (container, server) {
             name: name,
             url: url,
             iconUrl: iconUrl,
-            origin:origin
+            origin: origin
         }
 
         renderRoom();
@@ -70,12 +70,11 @@ var chatRoom = function (container, server) {
                 .attr('src', room.iconUrl)
                 .attr('title', room.name);
 
-            if(room.origin && room.type!='stanalone'){
-                d3.select('#origin_link').attr('href',room.origin);
-                d3.select('#origin_link').style('display','inline');
-            }
-            else
-                d3.select('#origin_link').style('display','none');
+            if (room.origin && room.type != 'stanalone') {
+                d3.select('#origin_link').attr('href', room.origin);
+                d3.select('#origin_link').style('display', 'inline');
+            } else
+                d3.select('#origin_link').style('display', 'none');
         }
     }
 
@@ -186,7 +185,7 @@ var chatRoom = function (container, server) {
                 type: "post",
                 url: "/uploadFile",
                 headers: {
-                    "Access-Control-Allow-Origin":"*"
+                    "Access-Control-Allow-Origin": "*"
                 },
                 data: formData,
                 async: false,
@@ -214,7 +213,7 @@ var chatRoom = function (container, server) {
 
         ui.addBubble({
             type: 'text',
-            value: htmlEncode(msg),
+            value: format_msg(htmlEncode(msg)),
             class: 'human',
             sender: user,
             time: (new Date()).toLocaleTimeString(),
@@ -245,7 +244,7 @@ var chatRoom = function (container, server) {
         socket.on('message', function (msg) {
             ui.addBubble({
                 type: 'text',
-                value: msg.value,
+                value: format_msg(msg.value),
                 class: msg.sender.id == user.id ? 'human' : 'bot',
                 sender: msg.sender,
                 time: msg.time,
@@ -279,6 +278,25 @@ var chatRoom = function (container, server) {
     init();
 }
 
+var format_msg = function (str) {
+    str = replace_url(str);
+    str = replace_em(str);
+    return str;
+}
+
+var replace_em = function (str) {
+    str = str.replace(/\[:([\u4e00-\u9fa5]+)\]/g, function () {
+        return $('i[data-code=' + arguments[1] + ']').html().replace(/style="([^_]+)"/g,'');
+    });
+    return str;
+}
+
+var replace_url= function(str){
+   str = str.replace(/^((https|http|ftp|rtsp|mms)?:\/\/)[^\s]+/g,function(){
+        return '<a href="'+arguments[0]+'" target="_blank">'+arguments[0]+'</a>';
+    });
+    return str;
+}
 
 var getQueryString = function (name) {
     var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');

@@ -2,8 +2,9 @@ const _ = require('lodash');
 const um = require('./user').manager;
 const msgr = require('./message').messager;
 const rm = require('./room').manager;
+const bot = require('./bot').bot;
 const room = require('./room').room;
-const html= require('html-entities').AllHtmlEntities;
+const html = require('html-entities').AllHtmlEntities;
 
 class nchat {
   constructor(io) {
@@ -11,6 +12,7 @@ class nchat {
     this.userManager = new um(io);
     this.roomManager = new rm(io);
     this.messager = new msgr(io);
+    this.bot = new bot();
     this._plugin_join = this._plugin_join.bind(this);
     this._message = this._message.bind(this);
     this._join = this._join.bind(this);
@@ -20,6 +22,7 @@ class nchat {
     this._action_createRoom = this._action_createRoom.bind(this);
     this._action_help = this._action_help.bind(this);
     this._action_sendMsgToAll = this._action_sendMsgToAll.bind(this);
+    this._action_chatToBot = this._action_chatToBot.bind(this);
     this.io.on('connection', this._connect)
   }
   _connect(socket) {
@@ -119,7 +122,8 @@ class nchat {
   _actions(_msg, _socket) {
     this._action_createRoom(_msg);
     this._action_help(_msg);
-    this._action_sendMsgToAll(_msg, _socket)
+    this._action_sendMsgToAll(_msg, _socket);
+    this._action_chatToBot(_msg);
   }
 
   _action_createRoom(_msg) {
@@ -146,6 +150,24 @@ class nchat {
 
   _action_sendMsgToAll(_msg, _socket) {
     this.messager.send_ToAll(_msg, _socket);
+  }
+
+  _action_chatToBot(_msg) {
+    if (_msg.value.lastIndexOf('@@') < 0) return;
+    let value = _msg.value.replace('@@', '');
+    this.bot.chat(value,_msg.sender.id, (values) => {
+      if (values!=null && values!=undefined && values.length > 0)
+        values.forEach(_value => {
+          let m = this.messager.botMessage(_value);
+          m.room = _msg.room;
+          this.messager.send(m);
+        });
+      else {
+        let m = this.messager.botMessage('小恩累了，休息一下哦');
+        m.room = _msg.room;
+        this.messager.send(m);
+      }
+    });
   }
 
 }

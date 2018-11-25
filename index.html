@@ -14,7 +14,9 @@
   <script src="/javascripts/d3.v4.min.js"></script>
   <script src="/javascripts/EventUtil.js"></script>
   <script src="/javascripts/chatUI-d3.min.js"></script>
+  <script src="/javascripts/jquery.qqface.min.js"></script>
   <script src="/javascripts/nchat-standalone.js"></script>
+
 </head>
 
 <body>
@@ -23,9 +25,10 @@
       <div class="col-md-12 column">
         <div class="page-header" style="padding:0px;margin:auto;margin-bottom:20px">
           <h1>
-            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;"/>
+            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;" />
             <span id='room_name' style="color:silver;"></span>
-            <a href="#" target="_blank" title="Go to Origin" id="origin_link"><img src="/images/origin.png" id="origin_icon" style="height:25px;vertical-align:middle;"/></a>
+            <a href="#" target="_blank" title="Go to Origin" id="origin_link"><img src="/images/origin.png" id="origin_icon"
+                style="height:25px;vertical-align:middle;" /></a>
             <small id='room_desc' style="font-size:16px">N-Chat</small>
             <img src="/images/favicon.png" class="img-circle" id="user_icon" style="height:40px;float:right;margin-right:20px;vertical-align:middle" />
           </h1>
@@ -70,6 +73,11 @@
 <script type="text/javascript">
   $(function () {
     chatRoom('cb-container', '//' + window.location.host);
-  });
 
+    $.qqface({
+      imgPath: '/images/emoticon/',
+      textarea: $('#chat_input'),
+      handle: $('#chat_plus')
+    });
+  });
 </script>
