@@ -4,7 +4,7 @@
   <title>N-Chat</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png" id="favicon">
   <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
   <link rel="stylesheet" href="/stylesheets/chatUI.css">
   <script src="/javascripts/lodash.min.js"></script>
@@ -16,54 +16,171 @@
   <script src="/javascripts/chatUI-d3.min.js"></script>
   <script src="/javascripts/jquery.qqface.min.js"></script>
   <script src="/javascripts/nchat-standalone.js"></script>
-
 </head>
 
 <body>
   <div class="container" style="width:100vw">
     <div class="row clearfix">
       <div class="col-md-12 column">
-        <div class="page-header" style="padding:0px;margin:auto;margin-bottom:20px">
-          <h1>
-            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;" />
-            <span id='room_name' style="color:silver;"></span>
-            <a href="#" target="_blank" title="Go to Origin" id="origin_link"><img src="/images/origin.png" id="origin_icon"
-                style="height:25px;vertical-align:middle;" /></a>
-            <small id='room_desc' style="font-size:16px">N-Chat</small>
-            <img src="/images/favicon.png" class="img-circle" id="user_icon" style="height:40px;float:right;margin-right:20px;vertical-align:middle" />
-          </h1>
-        </div>
+        <nav class="navbar navbar-default" role="navigation">
+          <div class="navbar-header" style="margin-top:5px">
+            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="margin-left:10px;height:40px;vertical-align:middle;" />
+            <a href="#" id="origin_link"><span id='room_name' style="font-size:28px;color:darkslategray;margin-right:10px;margin-left:10px"></span></a>
+            <span id='room_desc' style="font-size:12px;color:silver;"></span>
+          </div>
+
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li>
+                <a href="#" id="add_fav_room">收藏该房间</a>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">房间用户<span class="badge" id="room_users_count"></span><strong
+                    class="caret"></strong></a>
+                <ul class="dropdown-menu menulist" id="room_users"></ul>
+              </li>
+
+
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">在线用户<span class="badge" id="users_count"></span><strong
+                    class="caret"></strong></a>
+                <ul class="dropdown-menu menulist" id="users"></ul>
+              </li>
+
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">房间列表<span class="badge" id="rooms_count"></span><strong
+                    class="caret"></strong></a>
+                <ul class="dropdown-menu menulist" id="rooms"></ul>
+              </li>
+
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">收藏夹<span class="badge" id="fav_rooms_count"></span><strong
+                    class="caret"></strong></a>
+                <ul class="dropdown-menu menulist" id="fav_rooms">
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">工作助理<strong class="caret"></strong></a>
+                <ul class="dropdown-menu">
+
+                  <li>
+                    <a href="#">考勤制度</a>
+                  </li>
+
+                  <li>
+                    <a href="#">考勤异常</a>
+                  </li>
+
+                  <li>
+                    <a href="#">打卡信息</a>
+                  </li>
+
+                  <li>
+                    <a href="#">考勤单据</a>
+                  </li>
+
+                  <li>
+                    <a href="#">工作负荷</a>
+                  </li>
+
+                  <li class="divider"></li>
+
+                  <li>
+                    <a href="#">热门知识库</a>
+                  </li>
+                  <li>
+                    <a href="#">我的贡献</a>
+                  </li>
+
+                  <li class="divider"></li>
+
+                  <li>
+                    <a href="#">我的项目</a>
+                  </li>
+                  <li>
+                    <a href="#">我的贡献</a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">上述功能开发中</a>
+                  </li>
+                  <li>
+                    <a href="/?roomid=nchat_feedback&roomtype=standalone" target="_blank"><img src="/images/emoticon/meigui.gif">&nbsp;反馈建议</a>
+                  </li>
+
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">其他功能<strong class="caret"></strong></a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="#" onclick="nchat.bot('@@ 我要看头条新闻')">头条新闻</a>
+                  </li>
+
+                  <li>
+                    <a href="#" onclick="nchat.bot('@@ 需要一个笑话')">讲个笑话</a>
+                  </li>
+
+                  <li>
+                    <a href="#" onclick="nchat.bot('@@ 讲一个故事吧')">讲个故事</a>
+                  </li>
+
+                  <li>
+                    <a href="#" onclick="nchat.bot('@@ 脑经急转弯')">脑经急转弯</a>
+                  </li>
+
+                  <li>
+                    <a href="#" onclick="nchat.bot('@@ 快递查询')">快递查询</a>
+                  </li>
+
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#" onclick="nchat.bot('@@ 明天上海的天气怎么样')">上海天气</a>
+                    <a href="#" onclick="nchat.bot('@@ 明天成都的天气怎么样')">成都天气</a>
+                    <a href="#" onclick="nchat.bot('@@ 明天西安的天气怎么样')">西安天气</a>
+                    <a href="#" onclick="nchat.bot('@@ 明天台北的天气怎么样')">台北天气</a>
+                    <a href="#" onclick="nchat.bot('@@ 明天高雄的天气怎么样')">高雄天气</a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#" onclick="nchat.feedback()">问题反馈</a>
+                  </li>
+                  <li>
+                    <a href="#" onclick="nchat.bot('#help')">获得帮助</a>
+                  </li>
+
+                  <li>
+                    <a href="#" onclick="swithFullScreen()">切换全屏</a>
+                  </li>
+
+
+                  <li class="divider">
+                  </li>
+                  <li>
+                    <a href="#">程序员万岁&nbsp;<img src="images/emoticon/aixin.gif" width="20px"></a>
+                  </li>
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <img src="/images/favicon.png" class="img-circle" id="user_icon" style="height:25px;" /></a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="#" onclick="alert('亲，该功能即将上线 :)')">更换头像</a>
+                  </li>
+                  <li>
+                    <a href="#" onclick="nchat.logout()">切换用户</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+        </nav>
       </div>
     </div>
     <div class="row clearfix">
-      <div class="col-md-3 column" id='menu'>
-        <div class="panel-group" id="panel-242930">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <a class="panel-title collapsed" data-toggle="collapse" data-parent="#panel-242930" href="#panel-element-699109">用户列表
-                <span class="badge" id="room_users_count"></span>
-              </a>
-            </div>
-            <div id="panel-element-699109" class="panel-collapse in">
-              <div class="panel-body" id="users-container">
-                <ul id="room_users" class="list-unstyled"></ul>
-              </div>
-            </div>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <a class="panel-title" data-toggle="collapse" data-parent="#panel-242930" href="#panel-element-444761">房间列表
-                <span class="badge" id="rooms_count"></span></a>
-            </div>
-            <div id="panel-element-444761" class="panel-collapse in">
-              <div class="panel-body pre-scrollable" id="rooms-container">
-                <ul id="rooms" class="list-unstyled"></ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-9 column" id="cb-container">
+      <div class="col-md-12 column" id="cb-container">
       </div>
     </div>
   </div>
@@ -71,9 +188,9 @@
 
 </html>
 <script type="text/javascript">
+  var nchat;
   $(function () {
-    chatRoom('cb-container', '//' + window.location.host);
-
+    nchat = chatRoom('cb-container', '//' + window.location.host);
     $.qqface({
       imgPath: '/images/emoticon/',
       textarea: $('#chat_input'),

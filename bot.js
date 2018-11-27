@@ -9,7 +9,7 @@ class bot {
     this.self = new user({
       id: 'xiaoen',
       name: '程序员鼓励师小恩',
-      iconUrl: 'https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=3774486761,2283055156&fm=26&gp=0.jpg',
+      iconUrl: '/images/avatar/xiaoen.jpg',
     });
   }
 
@@ -33,11 +33,11 @@ class bot {
           if (r.resultType == 'text')
             return r.values.text
           if (r.resultType == 'image')
-            return `<a href="${r.values.image}" target="_blank"><img src="${r.values.image}"  width="300px" name="pic_msg"/></a>`
+            return `<a href="${r.values.image}" target="_blank"><img src="${r.values.image}"  name="pic_msg" /></a>`
           if (r.resultType == 'news') {
             let news = '';
             r.values.news.forEach(n => {
-              news = news + `<a href="${n.detailurl}" target="_blank" title="${n.info}"><img src="${n.icon}"  width="50px" style="margin-right:5px;margin-bottom:2px"/>${n.name}</a><br>`
+              news = news + `<a href="${n.detailurl}" target="_blank" title="${n.info}"><img src="${n.icon}"  name="icon_msg" onmousemove="showBigPic(this.src)" onmouseout="closeimg()"/>${n.name}</a><br>`
             });
             return news;
           }

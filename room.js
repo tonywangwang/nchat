@@ -101,7 +101,7 @@ class room {
   }) {
     this.id = id || uuidv1();
     this.name = name || 'N-Chat';
-    this.desc = desc || this.name;
+    this.desc = desc;
     this.type = type || 'standalone';
     this.url = url || `?roomid=${this.id}&roomtype=${this.type}`;
     this.iconUrl = iconUrl || '/images/' + this.type + '.png';

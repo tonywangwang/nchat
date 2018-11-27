@@ -5,6 +5,7 @@ const rm = require('./room').manager;
 const bot = require('./bot').bot;
 const room = require('./room').room;
 const html = require('html-entities').AllHtmlEntities;
+const config = require('./config').get();
 
 class nchat {
   constructor(io) {
@@ -23,7 +24,22 @@ class nchat {
     this._action_help = this._action_help.bind(this);
     this._action_sendMsgToAll = this._action_sendMsgToAll.bind(this);
     this._action_chatToBot = this._action_chatToBot.bind(this);
+    this._initRooms = this._initRooms.bind(this);
+    this._initUsers = this._initUsers.bind(this);
+    this._initRooms();
+    this._initUsers();
     this.io.on('connection', this._connect)
+  }
+
+  _initRooms() {
+    config.room.default.forEach(_room => {
+      this.roomManager.add(_room);
+    });
+  }
+  _initUsers(){
+    config.user.default.forEach(_user => {
+      this.userManager.add(_user);
+    });
   }
   _connect(socket) {
     this._plugin_join(socket);
@@ -31,7 +47,6 @@ class nchat {
     this._leave(socket);
     this._message(socket);
   }
-
   _message(_socket) {
     _socket.on('message', (_msg) => {
       //用户发送的消息全部进行html encode
@@ -69,6 +84,7 @@ class nchat {
       this.messager.send_WelcomeToThisRoom({
         roomName: room.name,
         roomUrl: room.url,
+        roomDesc:room.desc,
         userCount: this.userManager.users.length,
         roomUserCount: room.userManager.users.length,
         socket: socket

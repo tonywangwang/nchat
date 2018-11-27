@@ -94,15 +94,16 @@ class messager {
       extname == '.ico' ||
       extname == '.jpeg' ||
       extname == '.svg')
-      msg.value = `<a href="${url}" target="_blank"><img src="${url}" width="300px" name="pic_msg" title="${name}" alt="${name}"/></a>`;
+      msg.value = `<a href="${url}" target="_blank"><img src="${url}"  name="pic_msg" title="${name}" alt="${name}"/></a>`;
     else
-      msg.value = `<img src="/images/file.png" style="margin-right:5px;width:32px" /><a href="${url}"  name="file_msg">${name}</a>`;
+      msg.value = `<img src="/images/file.png" style="width:32px;margin-right:5px"  /><a href="${url}"  name="file_msg">${name}</a>`;
     this.send(msg);
   }
 
   send_WelcomeToThisRoom({
     roomUrl,
     roomName,
+    roomDesc,
     userCount,
     roomUserCount,
     socket: socket
@@ -111,6 +112,9 @@ class messager {
     socket.emit('message', this.botMessage(
       `欢迎进入  <a href="${roomUrl}" target="_blank">${roomName}</a>,
     当前总计有 ${userCount} 位 Newgger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
+
+    if(roomDesc)
+      socket.emit('message', this.botMessage(roomDesc));
 
     socket.emit('message', this.botMessage(this.help()));
 
