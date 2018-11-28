@@ -69,6 +69,20 @@ var chatRoom = function (container, server) {
             d3.select('title').html(room.name);
             d3.select("#room_name").html(room.name);
             //d3.select("#room_desc").html('N-Chat Alpha Powered by Tony.J.Wang');
+
+            d3.select('#room_type_icon')
+                .attr('src', '/images/' + room.type + '.png')
+                .attr('title', room.type)
+                .attr('alt', room.type)
+                .attr('class', 'img-circle')
+                .attr('onmousemove', 'showBigPic(this.src)')
+                .attr('onmouseout', 'closeimg()')
+                .style('margin-left', '10px')
+                .style('height', '15px')
+                .style('width', '15px')
+                // .style('margin-right', '5px')
+                .style('vertical-align', 'middle');
+
             d3.select("#room_icon")
                 .attr('src', room.iconUrl)
                 .attr('title', room.name);
@@ -118,6 +132,18 @@ var chatRoom = function (container, server) {
                 .append('div');
 
             div.append('img')
+                .attr('src', '/images/' + _room.type + '.png')
+                .attr('title', _room.type)
+                .attr('alt', _room.type)
+                .attr('class', 'img-circle')
+                .attr('onmousemove', 'showBigPic(this.src)')
+                .attr('onmouseout', 'closeimg()')
+                .style('height', '15px')
+                .style('width', '15px')
+                // .style('margin-right', '5px')
+                .style('vertical-align', 'middle');
+
+            div.append('img')
                 .attr('src', _room.iconUrl)
                 .attr('class', 'img-circle')
                 .attr('onmousemove', 'showBigPic(this.src)')
@@ -157,7 +183,7 @@ var chatRoom = function (container, server) {
         d3.select("#fav_rooms_count").style('margin-left', '10px').html(_fav_rooms.length);
 
         _.orderBy(_fav_rooms, [function (r) {
-            return r.userManager.users.length
+            return r.userManager != undefined ? r.userManager.users.length : 0
         }, 'name'], ['desc', 'asc']).forEach(function (_room) {
 
             var div = d3.select("#fav_rooms")
@@ -165,6 +191,17 @@ var chatRoom = function (container, server) {
                 .append('a')
                 .attr('href', '#')
                 .append('div');
+
+            div.append('img')
+                .attr('src', '/images/' + _room.type + '.png')
+                .attr('title', _room.type)
+                .attr('alt', _room.type)
+                .attr('class', 'img-circle')
+                .attr('onmousemove', 'showBigPic(this.src)')
+                .attr('onmouseout', 'closeimg()')
+                .style('height', '15px')
+                .style('width', '15px')
+                .style('vertical-align', 'middle');
 
             div.append('img')
                 .attr('src', _room.iconUrl)
@@ -186,7 +223,7 @@ var chatRoom = function (container, server) {
 
             div.append('span')
                 .attr('class', 'badge')
-                .html(_room.userManager.users.length);
+                .html(_room.userManager != undefined ? _room.userManager.users.length : 0);
 
             div.append('a')
                 .attr('href', '#')
@@ -401,6 +438,15 @@ var chatRoom = function (container, server) {
 
         socket.on('connect', function () {
             socket.emit('join', user, room);
+            d3.select("#user_status").style('background-color', 'green').html('online');
+        });
+
+        socket.on('disconnect', function () {
+            d3.select("#user_status").style('background-color', 'brown').html('offline');
+        });
+
+        socket.on('reconnecting', function () {
+            d3.select("#user_status").style('background-color', 'chocolate').html('reconnect');
         });
 
         socket.on('users', function (_users) {
@@ -426,6 +472,14 @@ var chatRoom = function (container, server) {
             });
         });
 
+    }
+
+    nchat.reconnect = function () {
+        socket.connect();
+    }
+
+    nchat.disconnect = function () {
+        socket.disconnect();
     }
 
     nchat.bot = function (msgText) {

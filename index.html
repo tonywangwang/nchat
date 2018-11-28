@@ -23,8 +23,9 @@
     <div class="row clearfix">
       <div class="col-md-12 column">
         <nav class="navbar navbar-default" role="navigation">
-          <div class="navbar-header" style="margin-top:5px">
-            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="margin-left:10px;height:40px;vertical-align:middle;" />
+          <div class="navbar-header" style="margin-top:5px" id="room_header">
+            <img src="" class="img-circle" id="room_type_icon" />
+            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;" />
             <a href="#" id="origin_link"><span id='room_name' style="font-size:28px;color:darkslategray;margin-right:10px;margin-left:10px"></span></a>
             <span id='room_desc' style="font-size:12px;color:silver;"></span>
           </div>
@@ -155,7 +156,6 @@
                     <a href="#" onclick="swithFullScreen()">切换全屏</a>
                   </li>
 
-
                   <li class="divider">
                   </li>
                   <li>
@@ -165,8 +165,19 @@
               </li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  <img src="/images/favicon.png" class="img-circle" id="user_icon" style="height:25px;" /></a>
+                  <img class="img-circle" id="user_icon" style="height:25px;" />
+                  <span class="badge" id="user_status"></span>
+                </a>
                 <ul class="dropdown-menu">
+                  <li>
+                    <a href="#" onclick="nchat.reconnect()">连接上线</a>
+                  </li>
+
+                  <li>
+                    <a href="#" onclick="nchat.disconnect()" title="下线后你将无法收发任何消息">断开下线</a>
+                  </li>
+                  <li class="divider">
+                  </li>
                   <li>
                     <a href="#" onclick="alert('亲，该功能即将上线 :)')">更换头像</a>
                   </li>
@@ -197,4 +208,16 @@
       handle: $('#chat_plus')
     });
   });
+</script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-58647875-7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag('js', new Date());
+  gtag('config', 'UA-58647875-7');
 </script>

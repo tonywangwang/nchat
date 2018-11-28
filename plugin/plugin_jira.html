@@ -4,7 +4,7 @@
 
 <script type="text/javascript">
     $(function () {
-        chatRoom('10.16.75.23:8210');
+        chatRoom('chat.newegg.space');
     });
 
     var room, host
@@ -14,14 +14,12 @@
 
         var initCurrentRoom = function () {
 
-            var id = $('meta[name=ajs-space-key]').attr('content') != undefined ? $('meta[name=ajs-space-key]')
-                .attr('content') : 'C19821028';
-            var type = 'confluence';
-            var name = $('meta[name=ajs-space-name]').attr('content') != undefined ? $('meta[name=ajs-space-name]').attr(
-                'content') : 'Confluence';
-            var iconUrl = $('img[class=avatar-img]').attr('src') != undefined ? '//' + window.location.host + $(
-                'img[class=avatar-img]').attr('src') : '/images/' + type + '.png';
-            var origin = window.location.href;
+            var id = $('a[class=jira-project-avatar]').attr('href') != undefined ? $('a[class=jira-project-avatar]')
+                .attr('href') : 'jira20181128';
+            var type = 'jira';
+            var name = $('a[class=jira-project-avatar]').attr('title') != undefined ? $('a[class=jira-project-avatar]').attr('title') : 'Jira';
+            var iconUrl = $('img[alt="'+name+'"]').attr('src') != undefined ? '//' + window.location.host + $('img[alt="'+name+'"]').attr('src') : '/images/' + type + '.png';
+            var origin = '//' + window.location.host + id.replace('jira20181128','');
             var url = '/?roomid=' + id + '&roomtype=' + type;
             var _url = 'http://' + _host + '/?roomid=' + id + '&roomname=' + encodeURIComponent(name) +
                 '&roomtype=' + type +
