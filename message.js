@@ -24,10 +24,11 @@ class messager {
     this.send_File = this.send_File.bind(this);
     this.botMessage = this.botMessage.bind(this);
     this.help = this.help.bind(this);
+    this.send_Statistics = this.send_Statistics.bind(this);
 
   }
 
-  send_History(socket, room) {
+  send_History(socket, room,callback) {
 
     if (config.database == 'array') {
       for (let i in this.messages) {
@@ -37,15 +38,35 @@ class messager {
     }
 
     if (config.database == 'cloudstore') {
-      cloudStore.get(config.message.cloudstore, //获取符合config配置条件以及room.id的messages
+      let queryUrl = config.message.cloudstore + '?sortField=time&sort=desc&f_room.id={"$in":["' + room.id + '",null]}&pageSize=' + config.message.loadHistoryMsgCount;
+      cloudStore.get(queryUrl,
         function (_messages) {
           _.orderBy(_messages.rows, ['time'], ['asc']).forEach(_msg => {
-            if (_msg.room == null || _msg.room.id == room.id)
-              socket.emit('message', _msg);
+            socket.emit('message', _msg);
+          });
+          if(callback!=undefined) callback();
+        });
+    }
+  }
+
+  send_Statistics(_io) {
+
+    if(_io==undefined) _io=this.io;
+    
+    if (config.database == 'array') {
+      _io.emit('statistics', {
+        total_message_count: this.messages.length
+      });
+    }
+    if (config.database == 'cloudstore') {
+      let queryUrl = config.message.cloudstore + '?pageSize=1';
+      cloudStore.get(queryUrl,
+        function (_messages) {
+          _io.emit('statistics', {
+            total_message_count: _messages.total_rows
           });
         });
     }
-
   }
 
   add(_message) {
@@ -96,7 +117,7 @@ class messager {
       extname == '.svg')
       msg.value = `<a href="${url}" target="_blank"><img src="${url}"  name="pic_msg" title="${name}" alt="${name}"/></a>`;
     else
-      msg.value = `<img src="/images/file.png" style="width:32px;margin-right:5px"  /><a href="${url}"  name="file_msg">${name}</a>`;
+      msg.value = `<img src="/images/file.png" style="width:32px;margin-right:5px"/><a href="${url}"  name="file_msg"  target="_blank">${name}</a>`;
     this.send(msg);
   }
 
@@ -113,7 +134,7 @@ class messager {
       `欢迎进入  <a href="${roomUrl}" target="_blank">${roomName}</a>,
     当前总计有 ${userCount} 位 Newgger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`));
 
-    if(roomDesc)
+    if (roomDesc)
       socket.emit('message', this.botMessage(roomDesc));
 
     socket.emit('message', this.botMessage(this.help()));
@@ -132,7 +153,7 @@ class messager {
 
     let msg = this.botMessage(`${userName}  进入了 <a href="${roomUrl}" target="_blank">${roomName}</a> 
     当前总计有 ${userCount} 位 Newegger 在线,该房间有 ${roomUserCount} 位 Newegger 在线`)
-    
+
     if (roomid)
       socket.broadcast.to(roomid).emit('message', msg);
     else
@@ -191,13 +212,11 @@ class messager {
     })
   }
 
-  help()
-  {
+  help() {
     return `N-Chat用户指南: 
     <url>
     <li>拖拽发送图片或者文件</li> 
     <li>双击窗口切换全屏模式</li>
-    <li>点击消息输入框右边 "+",可发送的表情</li>
     <li>消息中加上 <font color="green">@@</font> 联系小恩</li>
     <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
     <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>

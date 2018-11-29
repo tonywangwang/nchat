@@ -19,14 +19,14 @@
 </head>
 
 <body>
-  <div class="container" style="width:100vw">
+  <div class="container" style="width:100vw" id="container">
     <div class="row clearfix">
-      <div class="col-md-12 column">
-        <nav class="navbar navbar-default" role="navigation">
-          <div class="navbar-header" style="margin-top:5px" id="room_header">
-            <img src="" class="img-circle" id="room_type_icon" />
-            <img src="/images/favicon.png" class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;" />
-            <a href="#" id="origin_link"><span id='room_name' style="font-size:28px;color:darkslategray;margin-right:10px;margin-left:10px"></span></a>
+      <div class="col-md-12 column" style="padding:0">
+        <nav class="navbar navbar-default" role="navigation" style="margin:0;margin-bottom:5px;">
+          <div class="navbar-header" style="margin-top:5px;overflow:hidden;max-width:25vw;max-height: 40px" id="room_header">
+            <img class="img-circle" id="room_type_icon" />
+            <img class="img-circle" id="room_icon" style="height:40px;vertical-align:middle;" />
+            <a href="#" id="origin_link"><span id='room_name' style="font-size:20px;color:darkslategray;margin-left:5px"></span></a>
             <span id='room_desc' style="font-size:12px;color:silver;"></span>
           </div>
 
@@ -114,7 +114,7 @@
                 </ul>
               </li>
               <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">其他功能<strong class="caret"></strong></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">其他功能<span class="badge"  id="statis"></span><strong class="caret"></strong></a>
                 <ul class="dropdown-menu">
                   <li>
                     <a href="#" onclick="nchat.bot('@@ 我要看头条新闻')">头条新闻</a>
@@ -142,6 +142,7 @@
                     <a href="#" onclick="nchat.bot('@@ 明天成都的天气怎么样')">成都天气</a>
                     <a href="#" onclick="nchat.bot('@@ 明天西安的天气怎么样')">西安天气</a>
                     <a href="#" onclick="nchat.bot('@@ 明天台北的天气怎么样')">台北天气</a>
+                    <a href="#" onclick="nchat.bot('@@ 明天台中的天气怎么样')">台中天气</a>
                     <a href="#" onclick="nchat.bot('@@ 明天高雄的天气怎么样')">高雄天气</a>
                   </li>
                   <li class="divider"></li>
@@ -161,6 +162,7 @@
                   <li>
                     <a href="#">程序员万岁&nbsp;<img src="images/emoticon/aixin.gif" width="20px"></a>
                   </li>
+
                 </ul>
               </li>
               <li class="dropdown">
@@ -187,9 +189,11 @@
                 </ul>
               </li>
             </ul>
+          </div>
         </nav>
       </div>
     </div>
+
     <div class="row clearfix">
       <div class="col-md-12 column" id="cb-container">
       </div>
@@ -197,7 +201,6 @@
   </div>
 </body>
 
-</html>
 <script type="text/javascript">
   var nchat;
   $(function () {
@@ -205,7 +208,7 @@
     $.qqface({
       imgPath: '/images/emoticon/',
       textarea: $('#chat_input'),
-      handle: $('#chat_plus')
+      handle: $('#chat_emoticon')
     });
   });
 </script>
@@ -221,3 +224,5 @@
   gtag('js', new Date());
   gtag('config', 'UA-58647875-7');
 </script>
+
+</html>

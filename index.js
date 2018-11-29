@@ -38,7 +38,7 @@ function startup() {
   app.use(bodyParser.urlencoded({
     extended: false
   }));
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, 'public'),{maxage:'1d'}));
 
   app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');

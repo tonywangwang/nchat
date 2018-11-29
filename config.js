@@ -1,12 +1,13 @@
 const negConfig = require('neg-config');
 
 let config = {
-  "port": 3000,
-  "https": false,
-  "database": "array",
+  "port": 80,
+  "https":false,
+  "database": "cloudstore",
+  "statisInterval":60000,
   "message": {
-    "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/message?pageSize=100&sortField=time&sort=desc",
-    "loadHistoryMsgCount": 100
+    "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/message",
+    "loadHistoryMsgCount": 20
   },
   "room": {
     "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/room",
@@ -15,22 +16,22 @@ let config = {
       "type": "standalone",
       "name": "N-Chat Feedbacks",
       "desc": "大家可以在这里反馈N-Chat使用过程中的任何问题和建议，感谢&nbsp;<img src='images/emoticon/aixin.gif' width='20px'>",
-      "iconUrl": "/images/feedback.png",
+      "iconUrl": "/images/feedback.png"
     }, {
       "id": "19821028",
       "type": "standalone",
       "name": "N-Chat",
       "desc": "N-Chat是为Newegg程序员打造的开放交流平台",
-      "iconUrl": "/images/nchat.png",
+      "iconUrl": "/images/nchat.png"
     }]
   },
   "user": {
     "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/user",
     "default": [{
       "id": "xiaoen",
-      "name": '程序员鼓励师小恩',
+      "name": "程序员鼓励师小恩",
       "desc": "小恩是程序员鼓励师兼全天候私人助理",
-      "iconUrl": "/images/avatar/xiaoen.jpg",
+      "iconUrl": "/images/avatar/xiaoen.jpg"
     }]
   },
   "bot": {

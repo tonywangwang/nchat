@@ -26,9 +26,18 @@ class nchat {
     this._action_chatToBot = this._action_chatToBot.bind(this);
     this._initRooms = this._initRooms.bind(this);
     this._initUsers = this._initUsers.bind(this);
+    this._statistics = this._statistics.bind(this);
     this._initRooms();
     this._initUsers();
+    this._statistics();
     this.io.on('connection', this._connect)
+  }
+
+  _statistics() {
+
+    setInterval(function () {
+      arguments[0].messager.send_Statistics(arguments[0].io)
+    }, config.statisInterval, this);
   }
 
   _initRooms() {
@@ -36,7 +45,7 @@ class nchat {
       this.roomManager.add(_room);
     });
   }
-  _initUsers(){
+  _initUsers() {
     config.user.default.forEach(_user => {
       this.userManager.add(_user);
     });
@@ -80,20 +89,23 @@ class nchat {
       room.userManager.add(user).addSocket(socket.id);
       socket.join(room.socket_room);
 
-      //向新加入用户本人发送欢迎消息
-      this.messager.send_WelcomeToThisRoom({
-        roomName: room.name,
-        roomUrl: room.url,
-        roomDesc:room.desc,
-        userCount: this.userManager.users.length,
-        roomUserCount: room.userManager.users.length,
-        socket: socket
-      });
+      //向用户发送统计信息
+      this.messager.send_Statistics(socket);
 
       //向新加入用户发送该房间历史消息
-      this.messager.send_History(socket, room);
+      this.messager.send_History(socket, room, () => {
+        //向新加入用户本人发送欢迎消息
+        this.messager.send_WelcomeToThisRoom({
+          roomName: room.name,
+          roomUrl: room.url,
+          roomDesc: room.desc,
+          userCount: this.userManager.users.length,
+          roomUserCount: room.userManager.users.length,
+          socket: socket
+        });
+      });
 
-      //向所有人通知有新人加入房间
+      //向所有人(roomid指定后，指向当前房间广播)通知有新人加入房间
       this.messager.send_SomebodyJoinSomeRoom({
         userName: user.name,
         roomid: room.socket_room,
@@ -171,8 +183,8 @@ class nchat {
   _action_chatToBot(_msg) {
     if (_msg.value.lastIndexOf('@@') < 0) return;
     let value = _msg.value.replace('@@', '');
-    this.bot.chat(value,_msg.sender.id, (values) => {
-      if (values!=null && values!=undefined && values.length > 0)
+    this.bot.chat(value, _msg.sender.id, (values) => {
+      if (values != null && values != undefined && values.length > 0)
         values.forEach(_value => {
           let m = this.messager.botMessage(_value);
           m.room = _msg.room;

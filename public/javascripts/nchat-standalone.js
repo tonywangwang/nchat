@@ -85,6 +85,7 @@ var chatRoom = function (container, server) {
 
             d3.select("#room_icon")
                 .attr('src', room.iconUrl)
+                .attr('onerror', 'this.src="/images/' + room.type + '.png";this.onerror=null')
                 .attr('title', room.name);
             d3.select("#favicon").attr('href', room.iconUrl);
             if (room.origin && room.type != 'stanalone') {
@@ -118,7 +119,7 @@ var chatRoom = function (container, server) {
     var initRoomList = function (_rooms) {
 
         d3.select("#rooms").html('');
-        d3.select("#rooms_count").style('margin-left', '10px').html(_rooms.length);
+        d3.select("#rooms_count").style('margin-left', '5px').html(_rooms.length);
 
         _.orderBy(_rooms, [function (r) {
             return r.userManager.users.length
@@ -145,6 +146,7 @@ var chatRoom = function (container, server) {
 
             div.append('img')
                 .attr('src', _room.iconUrl)
+                .attr('onerror', 'this.src="/images/' + _room.type + '.png";this.onerror=null')
                 .attr('class', 'img-circle')
                 .attr('onmousemove', 'showBigPic(this.src)')
                 .attr('onmouseout', 'closeimg()')
@@ -180,7 +182,7 @@ var chatRoom = function (container, server) {
     var initFavRoomList = function (_fav_rooms) {
 
         d3.select("#fav_rooms").html('');
-        d3.select("#fav_rooms_count").style('margin-left', '10px').html(_fav_rooms.length);
+        d3.select("#fav_rooms_count").style('margin-left', '5px').html(_fav_rooms.length);
 
         _.orderBy(_fav_rooms, [function (r) {
             return r.userManager != undefined ? r.userManager.users.length : 0
@@ -205,6 +207,7 @@ var chatRoom = function (container, server) {
 
             div.append('img')
                 .attr('src', _room.iconUrl)
+                .attr('onerror', 'this.src="/images/' + _room.type + '.png";this.onerror=null')
                 .attr('class', 'img-circle')
                 .attr('onmousemove', 'showBigPic(this.src)')
                 .attr('onmouseout', 'closeimg()')
@@ -321,7 +324,7 @@ var chatRoom = function (container, server) {
 
         d3.select("#room_users").html('');
 
-        d3.select("#room_users_count").style('margin-left', '10px').html(_users.length);
+        d3.select("#room_users_count").style('margin-left', '5px').html(_users.length);
 
         _users.forEach(function (_user) {
             var div = d3.select("#room_users")
@@ -350,7 +353,7 @@ var chatRoom = function (container, server) {
     var initUserList = function (_users) {
         d3.select("#users").html('');
 
-        d3.select("#users_count").style('margin-left', '10px').html(_users.length);
+        d3.select("#users_count").style('margin-left', '5px').html(_users.length);
 
         _users.forEach(function (_user) {
 
@@ -445,8 +448,12 @@ var chatRoom = function (container, server) {
             d3.select("#user_status").style('background-color', 'brown').html('offline');
         });
 
-        socket.on('reconnecting', function () {
-            d3.select("#user_status").style('background-color', 'chocolate').html('reconnect');
+       /* socket.on('reconnecting', function (attemptNumber) {
+            d3.select("#user_status").style('background-color', 'chocolate').html('reconnect:'+ attemptNumber);
+        });*/
+
+        socket.on('statistics', function (statis) {
+            d3.select("#statis").style('margin-left', '5px').html(statis.total_message_count);
         });
 
         socket.on('users', function (_users) {
@@ -536,7 +543,7 @@ var format_msg = function (str) {
 
 var replace_em = function (str) {
     str = str.replace(/\[:([\u4e00-\u9fa5]+)\]/g, function () {
-        return $('i[data-code=' + arguments[1] + ']').html().replace(/style="([^_]+)"/g, '');
+        return $('i[data-code=' + arguments[1] + ']').html().replace(/style="([^_]+)px"/g, '');
     });
     return str;
 }
@@ -613,13 +620,13 @@ var getCookie = function (key) {
     return keyValue ? keyValue[2] : null;
 }
 
-var isFullScreen = false;
 
 var swithFullScreen = function () {
-    if (isFullScreen)
+    if (window.isFullScreen)
         cancelFullScreen();
     else
-        launchFullScreen(document.documentElement);
+        launchFullScreen(window.document.documentElement);
+        
 }
 
 var launchFullScreen = function (element) {
@@ -661,12 +668,12 @@ var addBigPicArea = function () {
     b = $('<div id="bigPicView" style="position:absolute;display:none;">');
     bi = $('<img id="bigPic" class="img-thumbnail" style="max-width:50vw">');
     b.append(bi);
-    b.appendTo('body');
+    b.appendTo('#container');
 }
 //展示
 var showBigPic = function (filepath) {
     $('#bigPic').attr('src', filepath);
-    $('#bigPicView').attr('style', 'position:absolute;display:block;left:50vw;top:50vh;z-index:999999');
+    $('#bigPicView').attr('style', 'position:absolute;display:block;left:50vw;top:30vh;z-index:999999');
 }
 
 //隐藏

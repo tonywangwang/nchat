@@ -8,8 +8,9 @@ body {
   padding: 0;
   border: 0;
   background: #4D4948;
-  background: url("/images/bg2.jpg") no-repeat;
+  background: url("/images/bg2.jpg") no-repeat 0 0px;background-attachment:fixed;background-size:100%;height:auto;
   background-size: cover;
+  height: 100vh;
 }
 
 img[name="pic_msg"] {
@@ -48,7 +49,7 @@ img[name="icon_msg"] {
 
 .menulist::-webkit-scrollbar {
   width: 5px;
-  height: 3px;
+  height: 5px;
   border-left: 0;
   background: #E6E6E6
 }
@@ -62,10 +63,25 @@ img[name="icon_msg"] {
   border-radius: 0
 }
 
+#chat_emoticon {
+  float: right;
+  width: 40px;
+  margin-top: -58px;
+  margin-right: 105px;
+  cursor: pointer
+}
+
+#chat_send {
+  float: right;
+  width: 40px;
+  margin-top: -58px;
+  margin-right: 60px;
+  cursor: pointer
+}
+
 #cb-container {
   font-size: 16px;
-  /*width: 100%;*/
-  height: 92vh;
+  height: 90vh;
   overflow: hidden;
 }
 
@@ -109,15 +125,17 @@ img[name="icon_msg"] {
 
 #cb-input {
   position: absolute;
-  bottom: 0;
+  bottom: 0px;
   width: 100%;
   text-align: center;
-  height: 77px
+  height: 60px;
 }
 
 #cb-input #cb-input-container {
   display: block;
-  margin: 10px
+  margin: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 
 #cb-input input {
@@ -126,7 +144,7 @@ img[name="icon_msg"] {
   box-shadow: 0 0 1px rgba(58, 58, 58, 0.5);
   border-radius: 40px;
   font-size: 1em;
-  padding: 19px 60px 19px 30px;
+  padding: 19px 120px 19px 30px;
   height: 56px;
   color: rgba(34, 34, 34, 0.6);
   border-style: none;
