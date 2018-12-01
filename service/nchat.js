@@ -34,7 +34,6 @@ class nchat {
   }
 
   _statistics() {
-
     setInterval(function () {
       arguments[0].messager.send_Statistics(arguments[0].io)
     }, config.statisInterval, this);

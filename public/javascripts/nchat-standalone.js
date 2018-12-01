@@ -1,17 +1,15 @@
 var chat; //for chatUI-d3.min.js required 
-
 var chatRoom = function (container, server) {
-    var socket, room, user, users, roomUsers, rooms, fav_rooms;
+    var socket,stackedit, room, user, users, roomUsers, rooms, fav_rooms;
     var uploadArea = document.getElementById(container);
     var ui = chatUI(d3.select('#' + container));
     var nchat = {};
     nchat.room = room;
     chat = ui;
 
-
     var initCurrentUser = function (callback) {
         var _user = {
-            id: 'tw9',
+            id: 'tw11',
             name: 'Tony.J.Wang（Manager,MIS）',
             iconUrl: '/images/avatar/default.jpg'
         }
@@ -85,18 +83,19 @@ var chatRoom = function (container, server) {
 
             d3.select("#room_icon")
                 .attr('src', room.iconUrl)
+                .attr('onmousemove', 'showBigPic(this.src)')
+                .attr('onmouseout', 'closeimg()')
                 .attr('onerror', 'this.src="/images/' + room.type + '.png";this.onerror=null')
                 .attr('title', room.name);
             d3.select("#favicon").attr('href', room.iconUrl);
-            if (room.origin && room.type != 'stanalone') {
+            if (room.origin) {
                 d3.select('#origin_link').attr('href', room.origin);
-                d3.select('#origin_link').attr('title', 'Go to Origin');
+                d3.select('#origin_link').attr('title', 'Go to Origin:' + room.name);
                 d3.select('#origin_link').attr('target', '_blank');
             } else
                 d3.select('#origin_link').attr('href', '#');
         }
     }
-
 
     var createRoom = function (_room, callback) {
         $.ajax({
@@ -166,11 +165,6 @@ var chatRoom = function (container, server) {
             div.append('span')
                 .attr('class', 'badge')
                 .html(_room.userManager.users.length);
-
-            /*if (_room.id == room.id && _room.type == room.type) {
-                room = _room;
-                initCurrentRoom();
-            }*/
 
         });
 
@@ -432,13 +426,17 @@ var chatRoom = function (container, server) {
             sender: user,
             time: (new Date()).toLocaleTimeString(),
             delay: 0
-        });
+        },function(){mermaid.init()});
     };
 
     var socketEvent = function () {
 
         socket = io.connect(server);
 
+        window.onbeforeunload = function (event) {
+            socket.disconnect();
+        };
+        
         socket.on('connect', function () {
             socket.emit('join', user, room);
             d3.select("#user_status").style('background-color', 'green').html('online');
@@ -448,9 +446,9 @@ var chatRoom = function (container, server) {
             d3.select("#user_status").style('background-color', 'brown').html('offline');
         });
 
-       /* socket.on('reconnecting', function (attemptNumber) {
-            d3.select("#user_status").style('background-color', 'chocolate').html('reconnect:'+ attemptNumber);
-        });*/
+        /* socket.on('reconnecting', function (attemptNumber) {
+             d3.select("#user_status").style('background-color', 'chocolate').html('reconnect:'+ attemptNumber);
+         });*/
 
         socket.on('statistics', function (statis) {
             d3.select("#statis").style('margin-left', '5px').html(statis.total_message_count);
@@ -476,9 +474,8 @@ var chatRoom = function (container, server) {
                 sender: msg.sender,
                 time: msg.time,
                 delay: 500
-            });
+            },function(){mermaid.init()});
         });
-
     }
 
     nchat.reconnect = function () {
@@ -507,13 +504,99 @@ var chatRoom = function (container, server) {
         logout_ne();
     }
 
+    var initMarkdown = function(){
+
+        d3.select('#open_markdown').attr('onclick', 'nchat.openMarkdownEditor()');
+    
+        stackedit = new Stackedit();
+        mermaid.initialize({
+            startOnLoad:true
+        });
+
+    
+        marked.setOptions({
+            renderer: new marked.Renderer(),
+            highlight: function (code, lan) {
+                if (lan == 'mermaid') return '<div class="mermaid">' + htmlDecode(code) +'</div>';
+                return hljs.highlightAuto(htmlDecode(code)).value;
+            },
+            pedantic: false,
+            gfm: true,
+            tables: true,
+            breaks: false,
+            sanitize: false,
+            smartLists: true,
+            smartypants: false,
+            xhtml: false
+        });
+    }
+    
+    var md_msg = {value:'',time:(new Date).getTime()};
+    var _md_msg = {value:'',time:(new Date).getTime()};
+    nchat.openMarkdownEditor = function () {
+
+        var input = d3.select('#chat_input').node();
+        stackedit.openFile({
+            name: room.name + '_' + moment().utc().local().format("YYYYMMDDHHmmss"),
+            content: {
+                text: input.value
+            }
+        });
+
+        stackedit.on('fileChange', (file) => {
+            md_msg.value = file.content.text;
+            md_msg.time = (new Date).getTime();
+        });
+
+        stackedit.on('close', (file) => {
+           if(md_msg.value==_md_msg.value && md_msg.time -_md_msg.time<1000 ) return; //防止重复触发
+            sendMessage(md_msg.value);
+            _md_msg  = {value:md_msg.value,time:md_msg.time};
+
+        });
+
+    }
+
+    var scrollToTopEvent = function()
+    {
+        $('#cb-flow').scroll(function () {
+            var scrollTop = $('#cb-flow').scrollTop(); 
+            if (scrollTop==0) {
+                loadHistoryMsg();
+            }
+        });
+    }
+
+    var loadHistoryMsg = function(){
+       
+        var lastMsgTime =  $(_.take( _.sortBy($('div[data-time]'),function(el){
+           return $(el).data('time');
+        }))).data('time');
+
+        $.get('/message?roomid=' + room.id + '&lastMsgTime=' + lastMsgTime,
+        function (messages) {
+            if (messages) {
+                messages = _.orderBy(messages,['time'],['desc']);
+                messages.forEach(function(msg){
+                    ui.addBubble({
+                        type: 'text',
+                        value: format_msg(msg.value),
+                        class: msg.sender.id == user.id ? 'human' : 'bot',
+                        sender: msg.sender,
+                        time: msg.time,
+                        delay: 500,
+                        isHistory:true
+                    },function(){mermaid.init(); $('#cb-flow').scrollTop(40);});
+                });
+            }
+        });
+    }
+
     var init = function () {
 
         addBigPicArea(container);
-
-        window.onbeforeunload = function (event) {
-            socket.disconnect();
-        };
+        initMarkdown();
+        scrollToTopEvent();
 
         d3.select('body').on('dblclick', swithFullScreen);
 
@@ -528,155 +611,11 @@ var chatRoom = function (container, server) {
         EventUtil.addHandler(uploadArea, "dragenter", uploadFile);
         EventUtil.addHandler(uploadArea, "dragover", uploadFile);
         EventUtil.addHandler(uploadArea, "drop", uploadFile);
+
+
     }
 
     init();
 
     return nchat;
-}
-
-var format_msg = function (str) {
-    str = replace_url(str);
-    str = replace_em(str);
-    return str;
-}
-
-var replace_em = function (str) {
-    str = str.replace(/\[:([\u4e00-\u9fa5]+)\]/g, function () {
-        return $('i[data-code=' + arguments[1] + ']').html().replace(/style="([^_]+)px"/g, '');
-    });
-    return str;
-}
-
-var replace_url = function (str) {
-    str = str.replace(/^((https|http|ftp|rtsp|mms)?:\/\/)[^\s]+/g, function () {
-        return '<a href="' + arguments[0] + '" target="_blank">' + arguments[0] + '</a>';
-    });
-    return str;
-}
-
-var getQueryString = function (name) {
-    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-    var r = window.location.search.substr(1).match(reg);
-    if (r != null) {
-        return decodeURIComponent(r[2]);
-    }
-    return null;
-}
-
-
-var login_ne = function (callback) {
-
-    var tokenParam = getQueryString('t');
-    var m_token = getCookie('loginToken') || tokenParam;
-
-    if (m_token) {
-        $.ajax({
-            url: "//apis.newegg.org/framework/v1/keystone/sso-auth-data",
-            type: "POST",
-            headers: {
-                "Authorization": "Bearer giOjDe8n4nEm7qOw4SrRmgMHUgotaAjb7c7OnFQ0",
-                "If-Modified-Since": "Mon, 26 Jul 1997 05:00:00 GMT",
-                "Cache-Control": "no-cache",
-                "Pragma": "no-cache",
-                "Access-Control-Allow-Origin": "*"
-            },
-            dataType: 'json',
-            data: {
-                token: m_token
-            },
-            success: function (data) {
-                window.currentUser = data.UserInfo;
-                setCookie('loginToken', m_token);
-                callback(data.UserInfo);
-            },
-            error: function () {
-                setCookie('loginToken', '');
-                if (tokenParam)
-                    window.location = window.location.href.replace(tokenParam, '');
-            }
-        });
-    } else {
-
-        var m_url = "https://account.newegg.org/login?redirect_url=" + encodeURIComponent(window.location.href);
-        window.location = m_url;
-    }
-}
-
-var logout_ne = function () {
-    setCookie("loginToken", "");
-    var m_url = "https://account.newegg.org/logout?redirect_url=" + encodeURIComponent(window.location.href);
-    window.location = m_url;
-}
-
-var setCookie = function (key, value) {
-    var expires = new Date();
-    expires.setTime(expires.getTime() + (6 * 24 * 60 * 60 * 1000));
-    document.cookie = key + '=' + value + ';expires=' + expires.toUTCString();
-}
-
-var getCookie = function (key) {
-    var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
-    return keyValue ? keyValue[2] : null;
-}
-
-
-var swithFullScreen = function () {
-    if (window.isFullScreen)
-        cancelFullScreen();
-    else
-        launchFullScreen(window.document.documentElement);
-        
-}
-
-var launchFullScreen = function (element) {
-    if (element.requestFullscreen) {
-        element.requestFullscreen();
-    } else if (element.msRequestFullscreen) {
-        element.msRequestFullscreen();
-    } else if (element.mozRequestFullScreen) {
-        element.mozRequestFullScreen();
-    } else if (element.webkitRequestFullscreen) {
-        element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-    }
-
-    isFullScreen = true;
-}
-
-var cancelFullScreen = function () {
-    if (document.exitFullscreen) {
-        document.exitFullscreen();
-    } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-    }
-
-    isFullScreen = false;
-}
-
-var htmlEncode = function (html) {
-    return $("<div>").text(html).html();
-}
-var htmlDecode = function (encodedHtml) {
-    return $("<div>").html(encodedHtml).text();
-}
-
-var addBigPicArea = function () {
-    b = $('<div id="bigPicView" style="position:absolute;display:none;">');
-    bi = $('<img id="bigPic" class="img-thumbnail" style="max-width:50vw">');
-    b.append(bi);
-    b.appendTo('#container');
-}
-//展示
-var showBigPic = function (filepath) {
-    $('#bigPic').attr('src', filepath);
-    $('#bigPicView').attr('style', 'position:absolute;display:block;left:50vw;top:30vh;z-index:999999');
-}
-
-//隐藏
-var closeimg = function () {
-    $("#bigPicView").attr('style', 'display:none');
 }

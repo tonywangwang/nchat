@@ -25,34 +25,63 @@ class messager {
     this.botMessage = this.botMessage.bind(this);
     this.help = this.help.bind(this);
     this.send_Statistics = this.send_Statistics.bind(this);
+    this.get_Messages = this.get_Messages.bind(this);
 
   }
 
-  send_History(socket, room,callback) {
+  send_History(socket, room, callback) {
+    this.get_Messages({
+      roomid: room.id
+    }, (msgs) => {
+      msgs.forEach(_msg => socket.emit('message', _msg));
+      if (callback != undefined) callback();
+    });
+  }
+
+  get_Messages({
+    roomid,
+    pageIndex,
+    pageSize,
+    lastMsgTime
+  }, callback) {
+
+    let msgs = [];
+    pageIndex = pageIndex || 1;
+    pageSize = pageSize || config.message.loadHistoryMsgCount || 20;
 
     if (config.database == 'array') {
-      for (let i in this.messages) {
-        if (this.messages[i].room == null || this.messages[i].room.id == room.id)
-          socket.emit('message', this.messages[i]);
-      }
+
+     
+      msgs = _.filter(this.messages, (m) => {
+        return (!roomid || (m.room == null || m.room.id == roomid)) && (!lastMsgTime || m.time < lastMsgTime);
+      });
+
+      msgs = _.orderBy(msgs,['time'],['desc']);
+
+      msgs = _.slice(msgs, (pageIndex - 1) * pageSize,
+        pageIndex * pageSize);
+      if (callback != undefined) callback(_.orderBy(msgs, ['time'], ['asc']));
     }
 
     if (config.database == 'cloudstore') {
-      let queryUrl = config.message.cloudstore + '?sortField=time&sort=desc&f_room.id={"$in":["' + room.id + '",null]}&pageSize=' + config.message.loadHistoryMsgCount;
+      let queryUrl = config.message.cloudstore +
+        '?sortField=time&sort=desc' +
+        (roomid ? '&f_room.id={"$in":["' + roomid + '",null]}' : '') +
+        '&pageSize=' + pageSize +
+        '&pageIndex=' + pageIndex +
+        (lastMsgTime ? '&f_time={"$lt":' + lastMsgTime + '}' : '')
       cloudStore.get(queryUrl,
         function (_messages) {
-          _.orderBy(_messages.rows, ['time'], ['asc']).forEach(_msg => {
-            socket.emit('message', _msg);
-          });
-          if(callback!=undefined) callback();
+          msgs = _.orderBy(_messages.rows, ['time'], ['asc']);
+          if (callback != undefined) callback(msgs);
         });
     }
   }
 
   send_Statistics(_io) {
 
-    if(_io==undefined) _io=this.io;
-    
+    if (_io == undefined) _io = this.io;
+
     if (config.database == 'array') {
       _io.emit('statistics', {
         total_message_count: this.messages.length

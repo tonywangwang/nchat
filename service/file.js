@@ -4,7 +4,7 @@ const uuidv1 = require('uuid/v1');
 
 class file {
   constructor() {
-    this.uploadFolder = path.join(__dirname, 'public/uploadfiles/');
+    this.uploadFolder = path.join(__dirname, '../public/uploadfiles/');
     this.upload = this.upload.bind(this);
     this._upload = this._upload.bind(this);
     this._createFolder = this._createFolder.bind(this);

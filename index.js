@@ -1,4 +1,4 @@
-const config = require('./config');
+const config = require('./service/config');
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -8,7 +8,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const multipart = require('connect-multiparty');
 const fs = require("fs");
-const file = require('./file');
+const file = require('./service/file');
 
 
 config.init('negConfig', startup)
@@ -30,7 +30,7 @@ function startup() {
 
   const io = require('socket.io')(server);
 
-  const nc = require('./nchat');
+  const nc = require('./service/nchat');
   let nchat = new nc(io);
 
   app.use(cors());
@@ -38,10 +38,16 @@ function startup() {
   app.use(bodyParser.urlencoded({
     extended: false
   }));
-  app.use(express.static(path.join(__dirname, 'public'),{maxage:'1d'}));
+
+  if (process.env.ENV == 'PRD')
+    app.use(express.static(path.join(__dirname, 'public'), {
+      maxage: '1h'
+    }));
+  else
+    app.use(express.static(path.join(__dirname, 'public')));
 
   app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/view/index.html');
   });
 
   app.post('/room', function (req, res) {
@@ -59,6 +65,18 @@ function startup() {
     };
     room = nchat.roomManager.get(room);
     res.json(room);
+  });
+
+  app.get('/message', function (req, res) {
+    let query = {
+      roomid: req.query['roomid'],
+      pageIndex: req.query['pageIndex'],
+      pageSize: req.query['pageSize'],
+      lastMsgTime: req.query['lastMsgTime']
+    };
+    nchat.messager.get_Messages(query, msgs => {
+      res.json(msgs);
+    });
   });
 
   app.post("/uploadFile", multipart(), function (req, res) {

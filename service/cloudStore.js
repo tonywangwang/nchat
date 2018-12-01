@@ -14,7 +14,7 @@ exports.get = function (url, cb) {
         cb(JSON.parse(body));
     } else {
       console.error('Get data from ' + options.uri + ' failed.');
-      console.error('StatusCode:' + response.statusCode);
+      //console.error('StatusCode:' + response.statusCode);
       console.error('Error:' + error);
     }
   });
@@ -33,7 +33,7 @@ exports.post = function (url, data, cb) {
     } else {
       if (cb!=undefined)  cb(null);
       console.error('Post  failed.');
-      console.error('StatusCode:' + response.statusCode);
+     // console.error('StatusCode:' + response.statusCode);
       console.error('Error:' + error);
     }
   });

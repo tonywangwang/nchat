@@ -3,11 +3,11 @@ const negConfig = require('neg-config');
 let config = {
   "port": 80,
   "https":false,
-  "database": "cloudstore",
+  "database": "array",
   "statisInterval":60000,
   "message": {
     "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/message",
-    "loadHistoryMsgCount": 20
+    "loadHistoryMsgCount": 5
   },
   "room": {
     "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/room",
