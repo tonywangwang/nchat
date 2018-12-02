@@ -11,7 +11,7 @@ const fs = require("fs");
 const file = require('./service/file');
 
 
-config.init('negConfig', startup)
+config.init('local', startup)
 
 function startup() {
 

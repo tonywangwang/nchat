@@ -8,10 +8,27 @@ body {
   padding: 0;
   border: 0;
   background: #4D4948;
-  background: url("/images/bg2.jpg") no-repeat 0 0px;background-attachment:fixed;background-size:100%;height:auto;
+  background: url("/images/bg3.jpg") no-repeat 0 0px;
   background-size: cover;
   height: 100vh;
 }
+
+.nchat-welcome {
+  position: absolute;
+  background-color:black;
+  background: url("/images/bg3.jpg") no-repeat 0 0px;
+  background-size: cover;
+  opacity:0.8;
+  z-index:9999;
+  width:100vw;
+  height:100vh;
+  display:block;
+  color:#fff;
+  text-align:center;
+  font-size:32px;
+  padding-top:20%;
+}
+
 
 img[name="pic_msg"] {
   max-width: 30vw;
@@ -66,7 +83,7 @@ img[name="icon_msg"] {
 #chat_emoticon {
   float: right;
   width: 40px;
-  margin-top: -58px;
+  margin-top: -55px;
   margin-right: 105px;
   cursor: pointer
 }
@@ -74,7 +91,7 @@ img[name="icon_msg"] {
 #chat_send {
   float: right;
   width: 40px;
-  margin-top: -58px;
+  margin-top: -55px;
   margin-right: 60px;
   cursor: pointer
 }
@@ -84,7 +101,6 @@ img[name="icon_msg"] {
   height: 90vh;
   overflow: hidden;
 }
-
 
 #cb-container ::-webkit-scrollbar {
   width: 5px;
@@ -128,38 +144,49 @@ img[name="icon_msg"] {
   bottom: 0px;
   width: 100%;
   text-align: center;
-  height: 60px;
+  height: 70px;
+  min-height: 50px;
+  max-height: 100px;
 }
 
 #cb-input #cb-input-container {
   display: block;
-  margin: 10px;
-  margin-left: 50px;
+  margin: 0px;
+  margin-left: 25px;
   margin-right: 50px;
 }
 
-#cb-input input {
+#cb-input textarea {
+  overflow:auto; 
+  resize:none; 
   width: 100%;
   display: block;
   box-shadow: 0 0 1px rgba(58, 58, 58, 0.5);
   border-radius: 40px;
   font-size: 1em;
   padding: 19px 160px 19px 30px;
-  height: 56px;
+  height: 70px;
+  min-height: 50px;
+  max-height: 100px;
   color: rgba(34, 34, 34, 0.6);
   border-style: none;
   transition: box-shadow 0.75s cubic-bezier(0.215, 0.61, 0.355, 1), color 0.75s cubic-bezier(0.215, 0.61, 0.355, 1), transform 375ms cubic-bezier(0.175, 0.885, 0.32, 1.275) 0s, opacity 375ms cubic-bezier(0.215, 0.61, 0.355, 1) 0s
 }
 
-#cb-input input:focus {
+#cb-input textarea:focus {
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.2)
+}
+
+#cb-input textarea::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
 }
 
 #cb-input button {
   float: right;
   width: 40px;
   height: 40px;
-  margin-top: -58px;
+  margin-top: -55px;
   margin-right: 150px;
   border-width: 3px;
   border-color: silver;
@@ -240,7 +267,8 @@ img[name="icon_msg"] {
   padding: 5px;
   margin: 0;
  /* opacity: 0;*/ 
-  display: inline
+ /* display: inline*/
+ display: block;
 }
 
 .cb-segment hr {

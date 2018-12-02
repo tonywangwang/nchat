@@ -1,6 +1,7 @@
 var format_msg = function (str) {
   //str = replace_url(str);
   str = replace_em(str);
+  str = str.split('\n').join('  \n');
   return format_md(str);
 }
 

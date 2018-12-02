@@ -1,73 +1,222 @@
-var nchat = function (host, room) {
+var appendScriptFiles = function (url) {
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = url;
+  document.getElementsByTagName('head')[0].appendChild(script);
+}
 
-  if (!host || !room || !room.id || !room.type || !room.name) return;
+var appendStyleSheets = function (url) {
+  var link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = url;
+  document.getElementsByTagName('head')[0].appendChild(link);
+}
 
-  var ediv = $('<div></div>');
-  ediv.attr('style', 'z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;');
+if (self == top) { 
+  if (!$) appendScriptFiles('/javascripts/jquery-1.11.1.js');
+  appendStyleSheets('/stylesheets/jquery-ui.min.css');
+  appendScriptFiles('/javascripts/jquery-ui.min.js');
+}
 
-  var eimg = $('<img></img>');
-  eimg.attr('src', host + '/images/chat_entry.png');
-  eimg.attr('style', 'width:78px;cursor:pointer');
-  eimg.attr('id', 'chat_entry_icon');
-  eimg.attr('title', 'Open N-Chat');
-  eimg.on('click', function () {
-    $('#nchat_container').css('display', 'block');
-    $('#nchat_frame').attr('src', room._url);
-  })
-  ediv.append(eimg);
-  $('body').append(ediv);
+var nchat_plugin = function (host, room) {
 
+  //判断是否如果已经在iframe中
+  if (self != top) { 
+    　　return;
+    }
 
-  $('head').append('<style type="text/css">' +
-    "\n.stackedit-no-overflow {\n  overflow: hidden;\n}\n\n.stackedit-container {\n  background-color: rgba(160, 160, 160, 0.5);\n  position: fixed;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 9999;\n}\n\n.stackedit-hidden-container {\n  position: absolute;\n  width: 10px;\n  height: 10px;\n  left: -99px;\n}\n\n.stackedit-iframe-container {\n  background-color: #fff;\n  position: absolute;\n  margin: auto;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  height: 85%;\n  width: 80%;\n  max-width: 1280px;\n  border-radius: 2px;\n  overflow: hidden;\n}\n\n.stackedit-iframe {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  border: 0;\n  border-radius: 2px;\n}\n\n@media (max-width: 740px) {\n  .stackedit-iframe-container {\n    height: 100%;\n    width: 100%;\n    border-radius: 0;\n  }\n\n  .stackedit-iframe {\n    border-radius: 0;\n  }\n}\n\n.stackedit-close-button {\n  position: absolute !important;\n  box-sizing: border-box !important;\n  width: 38px !important;\n  height: 36px !important;\n  margin: 4px !important;\n  padding: 0 4px !important;\n  text-align: center !important;\n  vertical-align: middle !important;\n  text-decoration: none !important;\n}\n" +
-    '</style>')
+  window.onload = function () {
+    if (!host || !room || !room.id || !room.type || !room.name) return;
 
-  var iframe = $('<iframe id="nchat_frame" class="stackedit-iframe"></iframe>');
-  var idiv2 = $('<div class="stackedit-iframe-container"></div>');
-  idiv3 = $('<div style="position:absolute;left:400px;top:15px;z-index:10000;cursor:pointer"></div>');
-  idiv3.append('<img src="' + host + '/images/chat_entry.png" title="Open to new Window" width="30px">')
-  idiv2.append(idiv3);
-  idiv2.append(iframe);
+    var entry_container = $('<div></div>');
+    entry_container.attr('style', 'z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;');
+    var entry_img = $('<img></img>');
+    entry_img.attr('src', host + '/images/chat_entry.png');
+    entry_img.attr('style', 'width:78px;cursor:pointer');
+    entry_img.attr('id', 'chat_entry_icon');
+    entry_img.attr('title', 'Open N-Chat');
+    entry_container.append(entry_img);
+    $('body').append(entry_container);
 
-  var idiv = $('<div class="stackedit-container" style="display:none" id="nchat_container"></div>');
-  idiv.append(idiv2);
-  $('body').append(idiv);
+    $('head').append(`<style type="text/css">
+                    .nchatplugin-container {
+                      background-color: #fff;
+                      position: absolute;
+                      margin: auto;
+                      top: 0;
+                      right: 0;
+                      bottom: 0;
+                      left: 0;
+                      height: 80%;
+                      width: 60%;
+                      max-width: 80vw;
+                      border-radius: 10px;
+                      overflow: hidden;
+                    }
+                    .nchatplugin-iframe {
+                      position: absolute;
+                      height: 100%;
+                      width: 100%;
+                      border: 0;
+                      border-radius: 10px;
+                    }
 
-  idiv3.click(function () {
-    $('#nchat_container').css('display', 'none');
-    openRoomWindow();
-  });
+                    @media (max-width: 740px) {
+                      .nchatplugin-container {
+                        height: 100%;
+                        width: 100%;
+                        max-width: 100vw;
+                      }
+                    }
+                    .nchatplugin-move {
+                      position: absolute;
+                      top: 0px;
+                      right:0px;
+                      background-color:#4D4948;
+                      opacity:0.5;
+                      z-index:9999;
+                      width:100%;
+                      height:100%;
+                      cursor:move;
+                      display:block;
+                      color:#fff;
+                      text-align:center;
+                      font-size:32px;
+                      padding-top:20%;
+                    }
+        
+                    .nchatplugin-button-container {
+                      position: absolute;
+                      top: 70px;
+                      right:5px;
+                      /*margin:0 auto;*/
+                      background-color:#4D4948;
+                      opacity:0.5;
+                      border-radius: 4px;
+                      z-index:9998;
+                      width:180px;
+                      height:40px;
+                      text-align:center;
+                      padding-top:10px;
+                      cursor:move;
+                    
+                    }
+                    .nchatplugin-button-container:hover{
+                      opacity:0.8;
+                    }
+                    .nchatplugin-button  {
+                      margin:5px;
+                      color:#fff;
+                      opacity:1;
+                      cursor:pointer;
+                    }
+                    </style>`);
 
-  idiv.click(function () {
-    $('#nchat_container').css('display', 'none');
-  });
+    var nchat_plugin_container = $('<div class="nchatplugin-container"  id="nchatplugin_container" style="display:none"></div>');
+    var nchat_plugin_iframe = $('<iframe id="nchatplugin_iframe" class="nchatplugin-iframe"></iframe>');
+    var nchat_plugin_move = $(`<div class="nchatplugin-move">按住鼠标左键移动窗体<br>拖拽窗体右下角可以调整大小<br>双击窗体外可隐藏窗体</div>`);
+    nchat_plugin_move.css('background', 'url("'+host+'/images/bg3.jpg") no-repeat 0 0px');
+    var btn_container = $('<div class="nchatplugin-button-container"></div>');
 
-  room._url = host +
-    '/?roomid=' + room.id +
-    '&roomname=' + encodeURIComponent(room.name) +
-    '&roomtype=' + room.type +
-    (room.iconUrl ? '&iconUrl=' + room.iconUrl : '') +
-    (room.origin ? '&origin=' + room.origin : '') +
-    (room.private ? '&private=' + room.private : '');
+    var btn_close = $('<span class="nchatplugin-button">关闭</span>');
+    var btn_hide = $('<span class="nchatplugin-button">隐藏</span>');
+    var btn_newWindow = $('<span class="nchatplugin-button">独立</span>');
+    var btn_move = $('<span class="nchatplugin-button" >移动</span>');
 
-  var openRoomWindow = function () {
-    if (window.location.protocol == 'https:') {
-      window.open(room._url);
-    } else {
-      $.ajax({
-        type: "post",
-        url: host + '/room',
-        data: JSON.stringify(room),
-        async: true,
-        contentType: 'application/json',
-        success: function (r) {
-          console.log('N-Chat:提交房间注册信息成功');
-          window.open(host + r.url);
-        },
-        error: function (r) {
-          console.log('N-Chat:提交N-Chat房间注册信息失败');
-        }
-      });
+    btn_container.append(btn_close);
+    btn_container.append(btn_hide);
+    btn_container.append(btn_newWindow);
+    btn_container.append(btn_move);
+    
+    
+
+    nchat_plugin_container.append(nchat_plugin_iframe);
+    nchat_plugin_container.append(btn_container);
+    nchat_plugin_container.append(nchat_plugin_move);
+    $('body').append(nchat_plugin_container);
+
+    entry_container.draggable();
+    btn_container.draggable();
+    nchat_plugin_container.resizable();
+    nchat_plugin_container.draggable();
+
+    nchat_plugin_iframe.load(function () {
+      nchat_plugin_move.css('display', 'none');
+    });
+
+    $('body').dblclick(function () {
+      $('#nchatplugin_container').css('display', 'none');
+      entry_img.css('display', 'block');
+    });
+
+    entry_img.click(function () {
+      $('#nchatplugin_container').css('display', 'block');
+
+      if (!$('#nchatplugin_iframe').attr('src')) {
+        nchat_plugin_move.css('display', 'block');
+        $('#nchatplugin_iframe').attr('src', room._url);
+      }
+
+      entry_img.css('display', 'none');
+    })
+
+    btn_move.click(function () {
+      nchat_plugin_move.css('display', 'block');
+    });
+
+    nchat_plugin_move.mouseup(function () {
+      nchat_plugin_move.css('display', 'none');
+    })
+
+    nchat_plugin_move.mouseout(function () {
+      nchat_plugin_move.css('display', 'none');
+    })
+
+    btn_newWindow.click(function () {
+      $('#nchatplugin_container').css('display', 'none');
+      $('#nchatplugin_iframe').attr('src', null);
+      entry_img.css('display', 'block');
+      openRoomWindow();
+    });
+
+    btn_hide.click(function () {
+      $('#nchatplugin_container').css('display', 'none');
+      entry_img.css('display', 'block');
+    });
+
+    btn_close.click(function () {
+      $('#nchatplugin_container').css('display', 'none');
+      $('#nchatplugin_iframe').attr('src', null);
+      entry_img.css('display', 'block');
+    });
+
+    room._url = host +
+      '/?roomid=' + room.id +
+      '&roomname=' + encodeURIComponent(room.name) +
+      '&roomtype=' + room.type +
+      (room.iconUrl ? '&iconUrl=' + room.iconUrl : '') +
+      (room.origin ? '&origin=' + room.origin : '') +
+      (room.private ? '&private=' + room.private : '');
+
+    var openRoomWindow = function () {
+      if (window.location.protocol == 'https:') {
+        window.open(room._url);
+      } else {
+        $.ajax({
+          type: "post",
+          url: host + '/room',
+          data: JSON.stringify(room),
+          async: true,
+          contentType: 'application/json',
+          success: function (r) {
+            console.log('N-Chat:提交房间注册信息成功');
+            window.open(host + r.url);
+          },
+          error: function (r) {
+            console.log('N-Chat:提交N-Chat房间注册信息失败');
+          }
+        });
+      }
     }
   }
 }

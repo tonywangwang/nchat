@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width">
   <link rel="shortcut icon" type="image/png" href="/images/favicon.png" id="favicon">
   <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
-  <link rel="stylesheet" href="/stylesheets/chatUI.css">
   <link rel="stylesheet" href="/stylesheets/vs2015.min.css">
+  <link rel="stylesheet" href="/stylesheets/nchat.css">
 
   <script src="/javascripts/moment.min.js"></script>
   <script src="/javascripts/lodash.min.js"></script>
@@ -41,9 +41,6 @@
 
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-              <li>
-                <a href="#" id="add_fav_room">收藏该房间</a>
-              </li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">房间用户<span class="badge" id="room_users_count"></span><strong
                     class="caret"></strong></a>
@@ -188,6 +185,9 @@
                   <li>
                     <a href="#" onclick="nchat.disconnect()" title="下线后你将无法收发任何消息">断开下线</a>
                   </li>
+                  <li>
+                    <a href="#" id="add_fav_room">收藏该房间</a>
+                  </li>
                   <li class="divider">
                   </li>
                   <li>
@@ -224,6 +224,7 @@
   });
 </script>
 
+
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-58647875-7"></script>
 <script>
@@ -235,5 +236,27 @@
   gtag('js', new Date());
   gtag('config', 'UA-58647875-7');
 </script>
+
+<script src="http://localhost/javascripts/nchat-plugin.js"></script>
+
+<script type="text/javascript">
+  var id = $('a[class=jira-project-avatar]').attr('href') != undefined ? $('a[class=jira-project-avatar]')
+    .attr('href') : 'jira20181128';
+  var type = 'jira';
+  var name = $('a[class=jira-project-avatar]').attr('title') != undefined ? $(
+    'a[class=jira-project-avatar]').attr('title') : 'Jira';
+  var iconUrl = $('img[alt="' + name + '"]').attr('src') != undefined ? '//' + window.location.host + $(
+    'img[alt="' + name + '"]').attr('src') : '/images/' + type + '.png';
+  var origin = '//' + window.location.host + id.replace('jira20181128', '');
+
+  nchat_plugin('http://localhost', {
+    id: id,
+    type: type,
+    name: name,
+    iconUrl: iconUrl,
+    origin: origin
+  });
+</script>
+
 
 </html>

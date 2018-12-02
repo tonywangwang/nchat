@@ -1,54 +1,23 @@
-<div style="z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;">
-    <img style="width:78px;cursor:pointer" id='chat_entry_icon' title="Open N-Chat">
-</div>
+<script src="http://chat.newegg.space/javascripts/nchat-plugin.js"></script>
 
 <script type="text/javascript">
     $(function () {
-        chatRoom('chat.newegg.space');
+
+        var id = $('a[class=jira-project-avatar]').attr('href') != undefined ? $('a[class=jira-project-avatar]')
+            .attr('href') : 'jira20181128';
+        var type = 'jira';
+        var name = $('a[class=jira-project-avatar]').attr('title') != undefined ? $(
+            'a[class=jira-project-avatar]').attr('title') : 'Jira';
+        var iconUrl = $('img[alt="' + name + '"]').attr('src') != undefined ? '//' + window.location.host + $(
+            'img[alt="' + name + '"]').attr('src') : '/images/' + type + '.png';
+        var origin = '//' + window.location.host + id.replace('jira20181128', '');
+
+        nchat('http://chat.newegg.space', {
+            id: id,
+            type: type,
+            name: name,
+            iconUrl: iconUrl,
+            origin: origin
+        });
     });
-
-    var room, host
-    var chatRoom = function (_host) {
-        host = _host;
-        $('#chat_entry_icon').attr('src', 'http://' + _host + '/images/chat_entry.png');
-
-        var initCurrentRoom = function () {
-
-            var id = $('a[class=jira-project-avatar]').attr('href') != undefined ? $('a[class=jira-project-avatar]')
-                .attr('href') : 'jira20181128';
-            var type = 'jira';
-            var name = $('a[class=jira-project-avatar]').attr('title') != undefined ? $('a[class=jira-project-avatar]').attr('title') : 'Jira';
-            var iconUrl = $('img[alt="'+name+'"]').attr('src') != undefined ? '//' + window.location.host + $('img[alt="'+name+'"]').attr('src') : '/images/' + type + '.png';
-            var origin = '//' + window.location.host + id.replace('jira20181128','');
-            var url = '/?roomid=' + id + '&roomtype=' + type;
-            var _url = 'http://' + _host + '/?roomid=' + id + '&roomname=' + encodeURIComponent(name) +
-                '&roomtype=' + type +
-                '&iconUrl=' + iconUrl + '&origin=' + origin;
-
-            _room = {
-                id: id,
-                name: name,
-                type: type,
-                iconUrl: iconUrl,
-                url: url,
-                origin: origin,
-                _url: _url
-            };
-
-            $('#chat_entry_icon').attr('onclick', 'openRoom()');
-
-            return _room;
-        }
-
-        var init = function () {
-            room = initCurrentRoom();
-        }
-
-        init();
-
-    }
-
-    var openRoom = function () {
-        window.open(room._url);
-    }
 </script>

@@ -142,10 +142,15 @@ http://localhost:3000
 
 ### 2018.12.01
 * 向上滚动加载历史消息功能 
-* Plugin 模式统一为引入一个js模式，简化使用；并且支持iframe内嵌显示
+* Plugin 模式统一为引入一个js模式，简化使用；并且支持iframe内嵌显示， 并在npoint应用
+
+### 2018.12.02
+* input 改为 textarea
+* confluence & jira 改为新的plugin模式
 
 ### Backlog
 * 房间支持Private/Public
 * @功能强化： 输入@加载用户选择List, 并自动发送邮件通知被@用户，有人@他
+* 应答知识库
 * edge 浏览器循环加载
 * http://10.16.78.88:8008/ 粘贴复制（Jay建议）

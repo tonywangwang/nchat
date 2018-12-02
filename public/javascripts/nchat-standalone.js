@@ -1,3 +1,12 @@
+var nchat_plugin_move = $(`<div class="nchat-welcome"><div style="font-size:48px">欢迎使用 N-Chat</div>
+<div style="margin-top:60px">N-Chat is NOT only CHAT</div></div>`);
+$('html').append(nchat_plugin_move);
+
+setTimeout(function(){
+    nchat_plugin_move.css('display', 'none');
+},3000);
+
+
 var chat; //for chatUI-d3.min.js required 
 var chatRoom = function (container, server) {
     var socket,stackedit, room, user, users, roomUsers, rooms, fav_rooms;
@@ -14,13 +23,13 @@ var chatRoom = function (container, server) {
             iconUrl: '/images/avatar/default.jpg'
         }
 
-        /*d3.select("#user_icon")
+        d3.select("#user_icon")
              .attr('src', _user.iconUrl)
              .attr('title', _user.name);
 
-         callback(_user);*/
+         callback(_user);
 
-        login_ne(function (userInfo) {
+       /* login_ne(function (userInfo) {
             _user.id = userInfo.UserID;
             _user.name = userInfo.FullName + ' (' + userInfo.Title + ')';
             _user.iconUrl = userInfo.Avatar;
@@ -31,7 +40,7 @@ var chatRoom = function (container, server) {
 
             if (callback != undefined)
                 callback(_user);
-        });
+        });*/
 
     }
 
@@ -531,8 +540,7 @@ var chatRoom = function (container, server) {
         });
     }
     
-    var md_msg = {value:'',time:(new Date).getTime()};
-    var _md_msg = {value:'',time:(new Date).getTime()};
+    var md_msg = '';
     nchat.openMarkdownEditor = function () {
 
         var input = d3.select('#chat_input').node();
@@ -543,16 +551,17 @@ var chatRoom = function (container, server) {
             }
         });
 
-        stackedit.on('fileChange', (file) => {
-            md_msg.value = file.content.text;
-            md_msg.time = (new Date).getTime();
+        d3.select('div[class=stackedit-container]').on('click',function(){
+           stackedit.close();
+        })
+
+        stackedit.on('fileChange', function(file) {
+            md_msg = file.content.text;
         });
 
-        stackedit.on('close', (file) => {
-           if(md_msg.value==_md_msg.value && md_msg.time -_md_msg.time<1000 ) return; //防止重复触发
-            sendMessage(md_msg.value);
-            _md_msg  = {value:md_msg.value,time:md_msg.time};
-
+        stackedit.on('close', function(file){
+           input.value = md_msg;
+           d3.select('#chat_input').node().focus();
         });
 
     }
