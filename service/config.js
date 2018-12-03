@@ -52,7 +52,7 @@ let config = {
           }
         },
         "userInfo": {
-          "apiKey": "5ea3a2cf0e1d40f291fbbf48b4200415",
+          "apiKey": "",
           "userId": "354632"
         }
       }

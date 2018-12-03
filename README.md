@@ -147,6 +147,8 @@ http://localhost:3000
 ### 2018.12.02
 * input 改为 textarea
 * confluence & jira 改为新的plugin模式
+* plugin模式优化和完善
+* 加入启动画面
 
 ### Backlog
 * 房间支持Private/Public
