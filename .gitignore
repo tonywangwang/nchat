@@ -3,3 +3,4 @@ node_modules/
 public/uploadfiles/
 package-lock.json
 cert/
+test.js
