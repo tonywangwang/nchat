@@ -21,7 +21,7 @@ var chatRoom = function (container, server) {
     var initCurrentUser = function (callback) {
         var _user = {
             id: 'tw14',
-            name: 'Tony.J.Wang（Manager,MIS）',
+            name: 'Tony.J.Wang（Mgr,MIS）',
             iconUrl: '/images/avatar/default.jpg'
         }
 

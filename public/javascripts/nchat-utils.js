@@ -106,6 +106,15 @@ var getQueryString = function (name) {
 
 var login_ne = function (callback) {
 
+    _user = {
+            id: 'tw13',
+            name: 'Tony.J.Wang（Manager,MIS）',
+            iconUrl: '/images/avatar/default.jpg'
+        }
+
+    callback(_user);
+    return;
+
     var tokenParam = getQueryString('t');
     var m_token = getCookie('loginToken') || tokenParam;
 

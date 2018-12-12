@@ -1,7 +1,7 @@
 module.exports = {
-  "port": 80,
+  "port": 8210,
   "https": false,
-  "database": "cloudstore",
+  "database": "array",
   "statisInterval": 60000,
   "message": {
     "cloudstore": "http://apis.newegg.org/datastore/v1/nchat/message_test",

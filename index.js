@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const favicon = require('serve-favicon');
 const fs = require("fs");
 
-config.init('negConfig', startup)
+config.init('local', startup)
 
 function startup() {
 
