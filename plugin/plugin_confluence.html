@@ -1,22 +1,23 @@
-<script src="http://chat.newegg.space/javascripts/nchat-plugin.js"></script>
-
+<script src="//chat.newegg.space/javascripts/nchat-plugin.js"></script>
+<script src="https://code.jquery.com/jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-    $(function () {
-        var id = $('meta[name=ajs-space-key]').attr('content') != undefined ? $('meta[name=ajs-space-key]')
-            .attr('content') : 'C19821028';
-        var type = 'confluence';
-        var name = $('meta[name=ajs-space-name]').attr('content') != undefined ? $('meta[name=ajs-space-name]')
-            .attr('content') : 'Confluence';
-        var iconUrl = $('img[class=avatar-img]').attr('src') != undefined ? '//' + window.location.host + $(
-            'img[class=avatar-img]').attr('src') : '/images/' + type + '.png';
-        var origin = window.location.href;
 
-        nchat('http://chat.newegg.space', {
-            id: id,
-            type: type,
-            name: name,
-            iconUrl: iconUrl,
-            origin: origin
-        });
+
+    var id = $('meta[name=ajs-space-key]').attr('content') != undefined ? $('meta[name=ajs-space-key]')
+        .attr('content') : 'C19821028';
+    var type = 'confluence';
+    var name = $('meta[name=ajs-space-name]').attr('content') != undefined ? $('meta[name=ajs-space-name]')
+        .attr('content') : 'Confluence';
+    var iconUrl = $('img[class=avatar-img]').attr('src') != undefined ? '//' + window.location.host + $(
+        'img[class=avatar-img]').attr('src') : '/images/' + type + '.png';
+    var origin = window.location.href;
+
+    nchat_plugin('//chat.newegg.space', {
+        id: id,
+        type: type,
+        name: name,
+        iconUrl: iconUrl,
+        origin: origin
     });
 </script>
+

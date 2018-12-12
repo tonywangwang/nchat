@@ -2,14 +2,22 @@ const _ = require('lodash');
 const config = require('./config').get();
 
 class manager {
-  constructor(_io) {
+  constructor(_io,_app) {
     this.io = _io;
+    this.app = _app;
     this.users = [];
     this.add = this.add.bind(this);
     this.remove = this.remove.bind(this);
     this.sendUsers = this.sendUsers.bind(this);
     this.removeBySid = this.removeBySid.bind(this);
     this.getById = this.getById.bind(this);
+    this.init = this.init.bind(this);
+  }
+
+  init(){
+    config.user.default.forEach(_user => {
+      this.add(_user);
+    });
   }
 
   add(_user, _cb) {

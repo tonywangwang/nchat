@@ -2,18 +2,23 @@ const _ = require('lodash');
 const um = require('./user').manager;
 const msgr = require('./message').messager;
 const rm = require('./room').manager;
-const bot = require('./bot').bot;
+const bm = require('./bot').botManager;
 const room = require('./room').room;
+const translate = require('./translate').translate;
+const file = require('./file');
 const html = require('html-entities').AllHtmlEntities;
 const config = require('./config').get();
 
 class nchat {
-  constructor(io) {
-    this.io = io;
-    this.userManager = new um(io);
-    this.roomManager = new rm(io);
-    this.messager = new msgr(io);
-    this.bot = new bot();
+  constructor(_io, _app) {
+    this.app = _app;
+    this.io = _io;
+    this.userManager = new um(_io, _app);
+    this.roomManager = new rm(_io, _app);
+    this.messager = new msgr(_io, _app);
+    this.botManager = new bm(_io, _app);
+    this.translate = new translate(_app);
+    this.file = new file(_app);
     this._plugin_join = this._plugin_join.bind(this);
     this._message = this._message.bind(this);
     this._join = this._join.bind(this);
@@ -21,40 +26,54 @@ class nchat {
     this._leave = this._leave.bind(this);
     this._actions = this._actions.bind(this);
     this._action_createRoom = this._action_createRoom.bind(this);
-    this._action_help = this._action_help.bind(this);
     this._action_sendMsgToAll = this._action_sendMsgToAll.bind(this);
     this._action_chatToBot = this._action_chatToBot.bind(this);
-    this._initRooms = this._initRooms.bind(this);
-    this._initUsers = this._initUsers.bind(this);
     this._statistics = this._statistics.bind(this);
-    this._initRooms();
-    this._initUsers();
+    this._fileUploads = this._fileUploads.bind(this);
+    this.init = this.init.bind(this);
+  }
+
+  init() {
+    this.roomManager.init();
+    this.userManager.init();
+    this.botManager.init();
+    this.roomManager.rest();
+    this.messager.rest();
+    this.translate.rest();
+    this.botManager.rest();
+    this._fileUploads();
     this._statistics();
     this.io.on('connection', this._connect)
   }
 
-  _statistics() {
-    setInterval(function () {
-      arguments[0].messager.send_Statistics(arguments[0].io)
-    }, config.statisInterval, this);
+  _fileUploads() {
+    this.file.uploads(({
+      msg,
+      url,
+      name
+    }) => {
+      msg.room = this.roomManager.add(msg.room);
+      this.messager.send_File({
+        msg: msg,
+        url: url,
+        name: name
+      })
+    })
   }
 
-  _initRooms() {
-    config.room.default.forEach(_room => {
-      this.roomManager.add(_room);
-    });
+  _statistics() {
+    setInterval(() => {
+      this.messager.send_Statistics()
+    }, config.statisInterval);
   }
-  _initUsers() {
-    config.user.default.forEach(_user => {
-      this.userManager.add(_user);
-    });
-  }
+
   _connect(socket) {
     this._plugin_join(socket);
     this._join(socket);
     this._leave(socket);
     this._message(socket);
   }
+
   _message(_socket) {
     _socket.on('message', (_msg) => {
       //用户发送的消息全部进行html encode
@@ -148,7 +167,6 @@ class nchat {
 
   _actions(_msg, _socket) {
     this._action_createRoom(_msg);
-    this._action_help(_msg);
     this._action_sendMsgToAll(_msg, _socket);
     this._action_chatToBot(_msg);
   }
@@ -168,11 +186,6 @@ class nchat {
       _room: _msg.room,
       creater: _msg.sender.name
     });
-
-  }
-
-  _action_help(_msg) {
-    this.messager.send_Help(_msg);
   }
 
   _action_sendMsgToAll(_msg, _socket) {
@@ -180,9 +193,15 @@ class nchat {
   }
 
   _action_chatToBot(_msg) {
+    this.botManager.work(_msg,(res)=>{
+      let m = this.messager.botMessage(res);
+      m.room = _msg.room;
+      this.messager.send(m);
+    });
+
     if (_msg.value.lastIndexOf('@@') < 0) return;
     let value = _msg.value.replace('@@', '');
-    this.bot.chat(value, _msg.sender.id, (values) => {
+    this.botManager.tuling(value, _msg.sender.id, (values) => {
       if (values != null && values != undefined && values.length > 0)
         values.forEach(_value => {
           let m = this.messager.botMessage(_value);
@@ -196,7 +215,6 @@ class nchat {
       }
     });
   }
-
 }
 
 module.exports = nchat;

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<head>
+  <title>N-Chat</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png" id="favicon">
+  <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/nchat-bot.css">
+  <link rel="stylesheet" href="/stylesheets/vs2015.min.css">
+  <script src="/javascripts/lodash.min.js"></script>
+  <script src="/javascripts/jquery-1.11.1.js"></script>
+  <script src="/javascripts/bootstrap.min.js"></script>
+  <script src="/javascripts/highlight.min.js"></script>
+  <script src="/javascripts/mermaid.min.js"></script>
+  <script src="/javascripts/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+  <script src="/javascripts/nchat-utils.js"></script>
+  
+<script>
+  var nchat_welcome = $(`<div class="nchat-welcome"><div style="font-size:48px">欢迎使用 N-Chat</div>
+  <div style="margin-top:60px">N-Chat is NOT only CHAT</div></div>`);
+  $('html').append(nchat_welcome);
+  nchat_welcome.click(function () {
+      nchat_welcome.css('display', 'none');
+  })
+  setTimeout(function () {
+      nchat_welcome.css('display', 'none');
+  }, 3000);
+  </script>
+</head>
+
+<body>
+  <div class="container" style="width:100vw" id="nchat_bot">
+    <div class="row clearfix">
+      <div class="col-md-12 column" style="padding:0">
+        <nav class="navbar navbar-default" role="navigation" style="margin:0;margin-bottom:5px;">
+          <div class="navbar-header nchat-header">
+            <img class="img-circle" id="nchat_bot_icon" style="margin-left:10px;height:40px;vertical-align:middle;" src="/images/favicon.png" />
+            <a href="#" id="origin_link"><span id='nchat_bot_name' style="font-size:20px;color:darkslategray;margin-left:5px">N-Chat
+                机器人管理</span></a>
+            <span id='room_desc' style="font-size:12px;color:silver;"></span>
+          </div>
+          <div class="collapse navbar-collapse">
+
+            <form class="navbar-form navbar-left" role="search">
+              <div class="form-group">
+                <input type="text" class="form-control" id='search' placeholder="输入查询条件" v-model="keywords" style="width:400px;" />
+              </div>
+              <button type="button" class="btn btn-default" @click="keywords=''">清空</button>
+              <button type="button" class="btn btn-default" @click="keywords=user.id">我的</button>
+              <button type="button" class="btn btn-info" @click="switchMode('edit',{})">创建</button>
+            </form>
+            <ul class="nav navbar-nav">
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown" id='dropdown_personal'>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <img class="img-circle" id="user_icon" style="height:25px;" :src="user.iconUrl" :title="user.name" />
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="#" v-on:click="logout_ne">切换用户</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div class="row clearfix">
+      <div class="col-md-12 column" id="content" style="padding:20px;">
+        <div class="col-md-12 column" id="list" v-if="mode=='list'">
+          <div class="row" v-for="value in rows">
+            <div class="col-md-4" v-for="bot in value" >
+                <a :href="'http://apis.newegg.org/common/v1/domain/user/'+bot.creator" target="_blank">
+              <img class="img-circle" :src="'http://apis.newegg.org/common/v1/domain/user/'+bot.creator+'/avatar'"
+                style="width:40px;position: absolute;left:25px;top:10px"></a>
+              <div class="thumbnail">
+                <img src="/images/robot-banner2.jpg" style="max-width: 100%;" class="img-rounded" />
+                <div class="caption">
+                  <h4>
+                    {{ bot.name }}
+                  </h4>
+                  <!--<div v-html="utils.format_msg(bot.desc)" style="max-height:20vh;overflow-y: scroll;"> </div>-->
+                 
+                  <p style="margin-bottom:0px;"><small>最后编辑于 {{ (bot.etime||bot.time) | localTime}}</small></p>
+                  <button class="btn btn-info" @click="switchMode('edit',bot)" style="position:absolute;right:90px;bottom:30px"
+                    v-if="editable(bot)">编辑</button>
+                  <button class="btn btn-success" @click="switchMode('view',bot)" style="position:absolute;right:25px;bottom:30px">查看</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 column" id="edit" v-if="mode=='edit'">
+          <div class="row clearfix">
+            <div class="col-md-12 column">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">
+                    {{bot.name || '创建机器人功能'}}
+                  </h3>
+                  <div style="position: absolute;right:20px;top:5px">
+                    <button type="button" class="btn btn-sm btn-info" @click="bot.id?update():add()">{{
+                      bot.id?'更新':'创建' }}</button>
+                    <button type="button" class="btn btn-sm" @click="updateStatus" v-if="bot.id" :class="{'btn-warning':bot.enabled==false,'btn-success':bot.enabled==true}">{{
+                      bot.enabled?'下线':'上线' }}</button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="del" v-if="bot.id">删除</button>
+                    <button type="button" class="btn btn-sm btn-default" @click="switchMode('copy',bot)" v-if="bot.id">复制</button>
+                    <button type="button" class="btn btn-sm btn-default" @click="switchMode('view',bot)" v-if="bot.id">查看</button>
+                    <button type="button" class="btn btn-sm btn-default" @click="switchMode('list')">返回</button>
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <div class="row clearfix">
+                    <div class="col-md-6 column">
+                      <form role="edit">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">1-基本信息</h3>
+                          </div>
+                          <div class="panel-body">
+                            <div class="form-group" v-if="bot.id">
+                              <label for="bot.id">功能ID</label>
+                              <p class="help-block">提交后系统自动生成的唯一编号</p>
+                              <input type="text" class="form-control" id="bot_id" placeholder="不用输入,提交后系统自动生成" v-model="bot.id"
+                                disabled='true'>
+                            </div>
+                            <div class="form-group" :class="!bot.name?'has-error':''">
+                              <label for="bot.name">名称</label>
+                              <p class="help-block">机器人功能名称</p>
+                              <input type="text" class="form-control" id="bot_name" placeholder="输入机器人功能名称" v-model="bot.name">
+                            </div>
+                            <div class="form-group" :class="!bot.desc?'has-error':''">
+                              <label for="bot.desc">描述</label>
+                              <p class="help-block">机器人功能的描述(至少说明功能是什么,如何使用)</p>
+                              <textarea class="form-control" rows="5" id="bot_desc" placeholder="输入机器人功能的描述(至少向用户说明功能是什么,如何使用)"
+                                v-model="bot.desc"></textarea>
+                            </div>
+                            <div class="form-group" v-if="bot.id">
+                              <label for="bot.id">操作记录</label>
+                              <p class="help-block">作者，创建和编辑等信息(系统自动记录)</p>
+                              <div class="panel panel-default">
+                                <div class="panel-body">
+                                  <div v-if="bot.creator"> {{ bot.creator }} 在 {{ bot.time | localTime }} 创建</div>
+                                  <div v-if="bot.editor"> {{ bot.editor }} 最后编辑于 {{ bot.etime | localTime }}</div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label class="checkbox-inline">
+                                <input type="checkbox" v-model="bot.enabled"> {{ bot.enabled?'已启用':'未启用'}}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">2-消息订阅和分析</h3>
+                          </div>
+                          <div class="panel-body">
+                            <div class="form-group" :class="!bot.match?'has-error':''">
+                              <label for="bot.match">消息-匹配</label>
+                              <p class="help-block">符合该正则表达式匹配的消息将被处理</p>
+                              <div class="input-group">
+                                <input type="text" class="form-control" id="bot_match" placeholder="输入消息匹配正则表达式"
+                                  v-model="bot.match">
+                                <span class="input-group-btn">
+                                  <button class="btn btn-info" type="button" @click="test_match">测试</button>
+                                </span>
+                              </div>
+                            </div>
+                            <div class="form-group">
+
+                              <label for="bot.params">消息-关键词提取</label>
+                              <p class="help-block">从用户输入消息中提取关键词，输出为<a class="btn" href="#" @click="help">params</a>数据组</p>
+                              <div class="input-group">
+                                <input type="text" class="form-control" id="bot_params" placeholder="输入消息关键词提取正则表达式"
+                                  v-model="bot.params">
+                                <span class="input-group-btn">
+                                  <button class="btn btn-info" type="button" @click="test_params">测试</button>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">3-转发处理接口(可选)</h3>
+                          </div>
+                          <div class="panel-body">
+                            <div class="form-group" :class="bot.api?(!/^((https|http|ftp|rtsp|mms)?:\/\/)[^\s]+/.test(bot.api)?'has-error':''):''">
+                              <label for="bot.api">接口-URL</label>
+                              <p class="help-block">处理消息的接口地址</p>
+                              <input type="text" class="form-control" id="bot_api" placeholder="输入接口URL" v-model="bot.api"></textarea>
+
+                            </div>
+                            <div class="form-group" :class="headers?(!utils.isJSON(headers)?'has-error':''):''">
+                              <label for="bot_headers">接口-头部信息</label>
+                              <p class="help-block">用于携带接口鉴权信息</p>
+                              <textarea class="form-control" rows="2" id="bot_headers" v-model="headers"></textarea>
+                            </div>
+
+                            <div class="form-group" :class="bot.api&&!bot.method?'has-error':''">
+                              <label for="bot_headers">接口-请求方法</label>
+                              <p class="help-block">用于指定接口请求方法</p>
+                              <label for="bot_method_get" class="radio-inline">
+                                <input type="radio" id="bot_method_get" value="GET" v-model="bot.method">GET</label>
+                              <label for="bot_method_post" class="radio-inline">
+                                <input type="radio" id="bot_method_post" value="POST" v-model="bot.method">POST</label>
+                              <label for="bot_method_put" class="radio-inline">
+                                <input type="radio" id="bot_method_put" value="PUT" v-model="bot.method">PUT</label>
+                              <label for="bot_method_delete" class="radio-inline">
+                                <input type="radio" id="bot_method_delete" value="DELETE" v-model="bot.method"> DELETE</label>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="bot.input">接口-请求参数</label>
+                              <p class="help-block">使用<a class="btn" href="https://ejs.bootcss.com" target="_blank">ejs模板</a>根据上面提取的消息关键词（可通过<a
+                                  class="btn" href="#" @click="help">params</a>数组获取），以及原始消息(可通过<a class="btn" href="#"
+                                  @click="help">message</a>对象)构造接口请求体(或GET QueryString)</p>
+                              <textarea class="form-control" rows="5" id="bot_input" v-model="bot.input"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="col-md-6 column">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h3 class="panel-title">4-最终返回消息</h3>
+                        </div>
+                        <div class="panel-body">
+                          <div class="form-group" :class="!bot.output?'has-error':''">
+                            <label for="bot.output">输出转换</label>
+                            <p class="help-block">使用<a class="btn" href="https://ejs.bootcss.com" target="_blank">ejs模板</a>根据用户输入的<a
+                                class="btn" href="#" @click="help">message</a>,消息关键词<a class="btn" href="#" @click="help">params</a>和接口返回
+                              (result=yourApiResObj)
+                              转换为给用户的最终消息内容</p>
+                            <textarea class="form-control" rows="5" id="bot_output" v-model="bot.output"></textarea>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h3 class="panel-title">功能测试</h3>
+                        </div>
+                        <div class="panel-body">
+                          <div class="form-group">
+                            <label for="test_msg">测试-消息</label>
+                            <p class="help-block">发布上线后，还可点击&nbsp;<img src="/images/chat_entry.png" style="width:25px">&nbsp;进行实测</p>
+                            <textarea class="form-control" rows="5" id="test_msg" placeholder="输入消息用于测试" v-model="input"></textarea>
+                          </div>
+                          <div class="form-group" style="text-align:right">
+                            <button class="btn btn-info" type="button"
+                              @click="test">测试</button></div>
+                          <div class="form-group">
+                            <label for="name">测试-结果</label>
+                            <div class="panel panel-default">
+                              <div class="panel-body" v-html="utils.format_msg(output)">
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label for="name">调试信息</label>
+                            <div class="panel panel-default">
+                              <div class="panel-body" v-html="utils.format_msg(JSON.stringify(debugInfo,null,'\t'))">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="alert alert-dismissable" :class="'alert-' + i.type" v-for="(i,index) in info" style="z-index:9999;position:fixed;right:10px;"
+                        :style="{bottom:index*60 + 'px'}">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true" @click="delInfo(index)">×</button>
+                        {{i.time | localTime}}: <strong v-html="i.info"></strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 column" id="view" v-if="mode=='view'||mode=='view_try'">
+          <div class="row clearfix">
+            <div class="col-md-12 column">
+              <div class="panel panel-default">
+                <div class="panel-heading nchat-bot-detail-header">
+                  <h3 class="panel-title">
+                    {{bot.name}}
+                  </h3>
+                  <div style="position: absolute;right:20px;top:5px;">
+                    <button type="button" class="btn btn-sm btn-info" @click="switchMode('edit',bot)" v-if="editable(bot)">编辑</button>
+                    <!--<button type="button" class="btn btn-sm btn-default" @click="switchMode('view_try',bot)" v-if="this.mode=='view'">试试</button>-->
+                    <button type="button" class="btn btn-sm btn-default" @click="switchMode('list')">返回</button>
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <div class="row clearfix">
+                    <div class="column" :class="{'col-md-12':(this.mode=='view')}">
+                      <div class="form-group" v-if="bot.id">
+                        <label for="bot.id">功能ID</label>
+                        <p class="help-block">提交后系统自动生成的唯一编号</p>
+                        <div class="well well-sm">{{bot.id}}</div>
+                      </div>
+                      <div class="form-group" :class="!bot.name?'has-error':''">
+                        <label for="bot.name">名称</label>
+                        <p class="help-block">机器人功能名称</p>
+                        <div class="well well-sm" v-html="bot.name"></div>
+                      </div>
+                      <div class="form-group" :class="!bot.desc?'has-error':''">
+                        <label for="bot.desc">描述</label>
+                        <p class="help-block">机器人功能的描述 (点击&nbsp;<img src="/images/chat_entry.png" style="width:25px">&nbsp;进行试用)</p>
+                        <div class="well well-bg" v-html="utils.format_msg(bot.desc)"></div>
+                      </div>
+                      <div class="form-group" v-if="bot.id">
+                        <label for="bot.id">操作记录</label>
+                        <p class="help-block">作者，创建和编辑等信息</p>
+                        <div class="well">
+                          <div v-if="bot.creator">  <a :href="'http://apis.newegg.org/common/v1/domain/user/'+bot.creator" target="_blank">
+                            <img class="img-circle" :src="'http://apis.newegg.org/common/v1/domain/user/'+bot.creator+'/avatar'"
+                              style="width:25px"></a> 创建于 {{ bot.time | localTime }} </div>
+                          <div v-if="bot.editor" style="margin-top:10px" ><a :href="'http://apis.newegg.org/common/v1/domain/user/'+bot.editor" target="_blank">
+                            <img class="img-circle" :src="'http://apis.newegg.org/common/v1/domain/user/'+bot.editor+'/avatar'"
+                              style="width:25px"></a> 编辑于 {{ bot.etime | localTime }}</div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="checkbox-inline">
+                          <input type="checkbox" v-model="bot.enabled" disabled>{{ bot.enabled?'已启用':'未启用'}}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="column" :class="{'col-md-0':(this.mode=='view')}">
+                      <!--<div class="embed-responsive embed-responsive-16by9" style="border-radius:10px;height: 80vh">
+                        <iframe class="embed-responsive-item" style="border-radius:10px;" :src="testRoomUrl"></iframe>
+                      </div>-->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</body>
+
+
+<script src="/javascripts/nchat-plugin.js"></script>
+
+<script type="text/javascript">
+  var id = 'nchat_bot';
+  var type = 'standalone';
+  var name = 'N-Chat 机器人测试专用';
+  var desc = "你在这里可以进行预发布的机器人功能进行测试";
+  var iconUrl = '/images/walle.png';
+  var origin = '/bot';
+  nchat_plugin('.', {
+    id: id,
+    type: type,
+    name: name,
+    iconUrl: iconUrl,
+    origin: origin,
+    desc: desc
+  });
+</script>
+
+<script src="/javascripts/nchat-bot.js"></script>
+
+</html>

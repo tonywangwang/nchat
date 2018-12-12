@@ -1,47 +1,43 @@
-var appendScriptFiles = function (url) {
-  var script = document.createElement("script");
-  script.type = "text/javascript";
-  script.src = url;
-  document.getElementsByTagName('head')[0].appendChild(script);
-}
-
-var appendStyleSheets = function (url) {
-  var link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = url;
-  document.getElementsByTagName('head')[0].appendChild(link);
-}
-
-if (self == top) { 
-  if (!$) appendScriptFiles('/javascripts/jquery-1.11.1.js');
-  appendStyleSheets('/stylesheets/jquery-ui.min.css');
-  appendScriptFiles('/javascripts/jquery-ui.min.js');
-}
-
 var nchat_plugin = function (host, room) {
 
   //判断是否如果已经在iframe中
-  if (self != top) { 
-    　　return;
-    }
+  if (self != top) {
+    return;
+  }
+  if (!host || !room || !room.id || !room.type || !room.name) return;
+  var appendScriptFiles = function (url) {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+    return script;
+  }
+  var appendStyleSheets = function (url) {
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    document.getElementsByTagName('head')[0].appendChild(link);
+    return link;
+  }
 
-  window.onload = function () {
-    if (!host || !room || !room.id || !room.type || !room.name) return;
-
-    var entry_container = $('<div></div>');
-    entry_container.attr('style', 'z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;');
+  var jsNode;
+  if (!$)
+    jsNode = appendScriptFiles(host + '/javascripts/jquery-1.11.1.js');
+  if (!$.ui) {
+    jsNode = appendStyleSheets(host + '/stylesheets/jquery-ui.min.css');
+    jsNode = appendScriptFiles(host + '/javascripts/jquery-ui.min.js');
+  }
+  var initNchatPlugin = function () {
     var entry_img = $('<img></img>');
     entry_img.attr('src', host + '/images/chat_entry.png');
-    entry_img.attr('style', 'width:78px;cursor:pointer');
+    entry_img.attr('style', 'width:78px;cursor:pointer;z-index: 9999; position: fixed ! important; right: 20px; bottom: 100px;');
     entry_img.attr('id', 'chat_entry_icon');
     entry_img.attr('title', 'Open N-Chat');
-    entry_container.append(entry_img);
-    $('body').append(entry_container);
+    $('body').append(entry_img);
 
     $('head').append(`<style type="text/css">
                     .nchatplugin-container {
-                      background-color: #fff;
-                      position: absolute;
+                      position: fixed;
                       margin: auto;
                       top: 0;
                       right: 0;
@@ -52,16 +48,19 @@ var nchat_plugin = function (host, room) {
                       max-width: 80vw;
                       border-radius: 10px;
                       overflow: hidden;
+                      z-index:9997;
                     }
                     .nchatplugin-iframe {
                       position: absolute;
+                      top: 0px;
+                      left:0px;
                       height: 100%;
                       width: 100%;
                       border: 0;
                       border-radius: 10px;
                     }
 
-                    @media (max-width: 740px) {
+                    @media screen and (max-width: 740px) {
                       .nchatplugin-container {
                         height: 100%;
                         width: 100%;
@@ -71,10 +70,10 @@ var nchat_plugin = function (host, room) {
                     .nchatplugin-move {
                       position: absolute;
                       top: 0px;
-                      right:0px;
+                      left:0px;
                       background-color:#4D4948;
                       opacity:0.5;
-                      z-index:9999;
+                      z-index:9998;
                       width:100%;
                       height:100%;
                       cursor:move;
@@ -93,9 +92,9 @@ var nchat_plugin = function (host, room) {
                       background-color:#4D4948;
                       opacity:0.5;
                       border-radius: 4px;
-                      z-index:9998;
+                      z-index:9999;
                       width:180px;
-                      height:40px;
+                      height:35px;
                       text-align:center;
                       padding-top:10px;
                       cursor:move;
@@ -114,8 +113,8 @@ var nchat_plugin = function (host, room) {
 
     var nchat_plugin_container = $('<div class="nchatplugin-container"  id="nchatplugin_container" style="display:none"></div>');
     var nchat_plugin_iframe = $('<iframe id="nchatplugin_iframe" class="nchatplugin-iframe"></iframe>');
-    var nchat_plugin_move = $(`<div class="nchatplugin-move">按住鼠标左键移动窗体<br>拖拽窗体右下角可以调整大小<br>双击窗体外可隐藏窗体</div>`);
-    nchat_plugin_move.css('background', 'url("'+host+'/images/bg3.jpg") no-repeat 0 0px');
+    var nchat_plugin_move = $(`<div class="nchatplugin-move">按住鼠标左键移动窗体<hr>拖拽窗体右下角可以调整大小<hr>双击窗体外可隐藏窗体</div>`);
+    nchat_plugin_move.css('background', 'url("' + host + '/images/bg3.jpg") no-repeat 0 0px');
     var btn_container = $('<div class="nchatplugin-button-container"></div>');
 
     var btn_close = $('<span class="nchatplugin-button">关闭</span>');
@@ -127,15 +126,13 @@ var nchat_plugin = function (host, room) {
     btn_container.append(btn_hide);
     btn_container.append(btn_newWindow);
     btn_container.append(btn_move);
-    
-    
 
     nchat_plugin_container.append(nchat_plugin_iframe);
     nchat_plugin_container.append(btn_container);
     nchat_plugin_container.append(nchat_plugin_move);
     $('body').append(nchat_plugin_container);
 
-    entry_container.draggable();
+    entry_img.draggable();
     btn_container.draggable();
     nchat_plugin_container.resizable();
     nchat_plugin_container.draggable();
@@ -164,13 +161,21 @@ var nchat_plugin = function (host, room) {
       nchat_plugin_move.css('display', 'block');
     });
 
-    nchat_plugin_move.mouseup(function () {
-      nchat_plugin_move.css('display', 'none');
-    })
+    nchat_plugin_container.resize(function () {
+      nchat_plugin_move.css('display', 'block');
+    });
 
-    nchat_plugin_move.mouseout(function () {
+    /*nchat_plugin_move.mouseup(function () {
       nchat_plugin_move.css('display', 'none');
-    })
+    })*/
+
+    nchat_plugin_move.click(function () {
+      nchat_plugin_move.css('display', 'none');
+    });
+
+    /* nchat_plugin_move.mouseout(function () {
+       nchat_plugin_move.css('display', 'none');
+     });*/
 
     btn_newWindow.click(function () {
       $('#nchatplugin_container').css('display', 'none');
@@ -204,7 +209,7 @@ var nchat_plugin = function (host, room) {
       } else {
         $.ajax({
           type: "post",
-          url: host + '/room',
+          url: host + '/api/room',
           data: JSON.stringify(room),
           async: true,
           contentType: 'application/json',
@@ -219,4 +224,10 @@ var nchat_plugin = function (host, room) {
       }
     }
   }
+  if (!jsNode)
+    $(function () {
+      initNchatPlugin()
+    });
+  else
+    jsNode.onload = initNchatPlugin;
 }

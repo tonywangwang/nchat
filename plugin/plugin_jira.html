@@ -1,23 +1,21 @@
-<script src="http://chat.newegg.space/javascripts/nchat-plugin.js"></script>
+<script src="//chat.newegg.space/javascripts/nchat-plugin.js"></script>
+<script src="https://code.jquery.com/jquery-1.7.2.min.js"></script>
 
 <script type="text/javascript">
-    $(function () {
+    var id = $('a[class=jira-project-avatar]').attr('href') != undefined ? $('a[class=jira-project-avatar]')
+        .attr('href') : 'jira20181128';
+    var type = 'jira';
+    var name = $('a[class=jira-project-avatar]').attr('title') != undefined ? $(
+        'a[class=jira-project-avatar]').attr('title') : 'Jira';
+    var iconUrl = $('img[alt="' + name + '"]').attr('src') != undefined ? '//' + window.location.host + $(
+        'img[alt="' + name + '"]').attr('src') : '/images/' + type + '.png';
+    var origin = '//' + window.location.host + id.replace('jira20181128', '');
 
-        var id = $('a[class=jira-project-avatar]').attr('href') != undefined ? $('a[class=jira-project-avatar]')
-            .attr('href') : 'jira20181128';
-        var type = 'jira';
-        var name = $('a[class=jira-project-avatar]').attr('title') != undefined ? $(
-            'a[class=jira-project-avatar]').attr('title') : 'Jira';
-        var iconUrl = $('img[alt="' + name + '"]').attr('src') != undefined ? '//' + window.location.host + $(
-            'img[alt="' + name + '"]').attr('src') : '/images/' + type + '.png';
-        var origin = '//' + window.location.host + id.replace('jira20181128', '');
-
-        nchat('http://chat.newegg.space', {
-            id: id,
-            type: type,
-            name: name,
-            iconUrl: iconUrl,
-            origin: origin
-        });
+    nchat_plugin('//chat.newegg.space', {
+        id: id,
+        type: type,
+        name: name,
+        iconUrl: iconUrl,
+        origin: origin
     });
 </script>

@@ -7,14 +7,11 @@ exports.get = function (url, cb) {
     method: 'GET'
   };
   request(options, function (error, response, body) {
-    if (!error && (response.statusCode == 200 || response.statusCode == 204)) {
-      if (response.statusCode == 204)
-        cb(null);
-      else
-        cb(JSON.parse(body));
+    if (!error && response.statusCode == 200) {
+      if (cb) cb(JSON.parse(body));
     } else {
+      if (cb) cb(null);
       console.error('Get data from ' + options.uri + ' failed.');
-      //console.error('StatusCode:' + response.statusCode);
       console.error('Error:' + error);
     }
   });
@@ -26,14 +23,46 @@ exports.post = function (url, data, cb) {
     method: 'POST',
     json: data
   };
-  
+
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 202) {
-      if (cb!=undefined)  cb(body);
+      if (cb) cb(body);
     } else {
-      if (cb!=undefined)  cb(null);
-      console.error('Post  failed.');
-     // console.error('StatusCode:' + response.statusCode);
+      if (cb) cb(null);
+      console.error('Post failed.');
+      console.error('Error:' + error);
+    }
+  });
+}
+
+exports.delete = function (url, cb) {
+  var options = {
+    uri: url,
+    method: 'DELETE',
+  };
+  request(options, function (error, response, body) {
+    if (!error && response.statusCode == 202) {
+      if (cb) cb(response.statusCode);
+    } else {
+      if (cb) cb(null);
+      console.error('Delete failed.');
+      console.error('Error:' + error);
+    }
+  });
+}
+
+exports.update = function (url, data, cb) {
+  var options = {
+    uri: url,
+    method: 'PUT',
+    json: data
+  };
+  request(options, function (error, response, body) {
+    if (!error && response.statusCode == 202) {
+      if (cb) cb(body);
+    } else {
+      if (cb) cb(null);
+      console.error('Update failed.');
       console.error('Error:' + error);
     }
   });

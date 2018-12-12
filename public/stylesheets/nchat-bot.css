@@ -1,0 +1,79 @@
+html {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #4D4948;
+  background: url("/images/bg3.jpg") no-repeat 0 0px;
+  background-size: cover;
+  height: 100vh;
+}
+
+.nchat-welcome {
+  position: absolute;
+  background-color: black;
+  background: url("/images/bg3.jpg") no-repeat 0 0px;
+  background-size: cover;
+  opacity: 0.8;
+  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  color: #fff;
+  text-align: center;
+  font-size: 32px;
+  padding-top: 20%;
+}
+
+.nchat-header {
+  position: relative;
+  top: 5px;
+  overflow: hidden;
+  max-width: 80vw;
+  max-height: 40px;
+}
+
+#content {
+  height: 90vh;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+#content::-webkit-scrollbar {
+  width: 5px;
+  height: 3px;
+  border-left: 0;
+  background: rgba(0, 0, 0, 0.1)
+}
+
+#content::-webkit-scrollbar-track {
+  background: none
+}
+
+#content::-webkit-scrollbar-thumb {
+  background: #6C6C6C;
+  border-radius: 0
+}
+
+
+
+div::-webkit-scrollbar {
+  width: 5px;
+  height: 3px;
+  border-left: 0;
+  background: #ffffff;
+}
+
+div::-webkit-scrollbar-track {
+  background: none
+}
+
+div::-webkit-scrollbar-thumb {
+  background:skyblue;
+  border-radius: 0
+}
+

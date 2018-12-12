@@ -3,12 +3,13 @@ const cloudStore = require('./cloudStore');
 const config = require('./config').get();
 const _ = require('lodash');
 const path = require('path');
-let bot = require('./bot').bot;
+let bm = require('./bot').botManager;
 
 
 class messager {
-  constructor(_io) {
+  constructor(_io,_app) {
     this.io = _io;
+    this.app = _app;
     this.messages = [];
     this.add = this.add.bind(this);
     this.remove = this.remove.bind(this);
@@ -18,15 +19,27 @@ class messager {
     this.send_History = this.send_History.bind(this);
     this.send_Leave = this.send_Leave.bind(this);
     this.send_CreateRoom = this.send_CreateRoom.bind(this);
-    this.send_Help = this.send_Help.bind(this);
     this.send_DuplicateJoin = this.send_DuplicateJoin.bind(this);
     this.send_ToAll = this.send_ToAll.bind(this);
     this.send_File = this.send_File.bind(this);
     this.botMessage = this.botMessage.bind(this);
-    this.help = this.help.bind(this);
     this.send_Statistics = this.send_Statistics.bind(this);
     this.get_Messages = this.get_Messages.bind(this);
-
+    this.rest = this.rest.bind(this);
+  }
+  rest() {
+    if(!this.app) return; 
+    this.app.get('/api/message',  (req, res)=> {
+      let query = {
+        roomid: req.query['roomid'],
+        pageIndex: req.query['pageIndex'],
+        pageSize: req.query['pageSize'],
+        lastMsgTime: req.query['lastMsgTime']
+      };
+      this.get_Messages(query, msgs => {
+        res.json(msgs);
+      });
+    });
   }
 
   send_History(socket, room, callback) {
@@ -50,14 +63,10 @@ class messager {
     pageSize = pageSize || config.message.loadHistoryMsgCount || 20;
 
     if (config.database == 'array') {
-
-     
       msgs = _.filter(this.messages, (m) => {
         return (!roomid || (m.room == null || m.room.id == roomid)) && (!lastMsgTime || m.time < lastMsgTime);
       });
-
       msgs = _.orderBy(msgs,['time'],['desc']);
-
       msgs = _.slice(msgs, (pageIndex - 1) * pageSize,
         pageIndex * pageSize);
       if (callback != undefined) callback(_.orderBy(msgs, ['time'], ['asc']));
@@ -71,7 +80,7 @@ class messager {
         '&pageIndex=' + pageIndex +
         (lastMsgTime ? '&f_time={"$lt":' + lastMsgTime + '}' : '')
       cloudStore.get(queryUrl,
-        function (_messages) {
+         (_messages)=> {
           msgs = _.orderBy(_messages.rows, ['time'], ['asc']);
           if (callback != undefined) callback(msgs);
         });
@@ -90,7 +99,7 @@ class messager {
     if (config.database == 'cloudstore') {
       let queryUrl = config.message.cloudstore + '?pageSize=1';
       cloudStore.get(queryUrl,
-        function (_messages) {
+         (_messages)=> {
           _io.emit('statistics', {
             total_message_count: _messages.total_rows
           });
@@ -165,9 +174,6 @@ class messager {
 
     if (roomDesc)
       socket.emit('message', this.botMessage(roomDesc));
-
-    socket.emit('message', this.botMessage(this.help()));
-
   };
 
   send_SomebodyJoinSomeRoom({
@@ -197,13 +203,6 @@ class messager {
 
     this.io.to(roomid).emit('message',
       this.botMessage(`${userName} 转身离开，当前总计有  ${userCount} 位 Newgger 在线`));
-  }
-
-  send_Help(_msg) {
-    if (_msg.value.lastIndexOf('#help') < 0) return;
-    let msg = this.botMessage(this.help());
-    msg.room = _msg.room;
-    this.send(msg);
   }
 
   send_CreateRoom({
@@ -237,21 +236,10 @@ class messager {
   botMessage(value) {
     return new message({
       value: value,
-      sender: (new bot()).self
+      sender: (new bm()).agent
     })
   }
 
-  help() {
-    return `N-Chat用户指南: 
-    <url>
-    <li>拖拽发送图片或者文件</li> 
-    <li>双击窗口切换全屏模式</li>
-    <li>消息中加上 <font color="green">@@</font> 联系小恩</li>
-    <li>消息中加上 <font color="green">@all</font> 将向N-Chat世界广播</li>
-    <li>发送 <font color="green">#room#房间名称</font> 创建新的房间 </li>
-    <li>发送 <font color="green">#help</font> 获得帮助</li>
-    </ul>`
-  }
 }
 
 class message {

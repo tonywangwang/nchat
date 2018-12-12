@@ -4,26 +4,52 @@ const config = require('./config').get();
 let um = require('./user').manager;
 
 class manager {
-
-  constructor(_io) {
+  constructor(_io, _app) {
     this.io = _io;
+    this.app = _app;
     this.rooms = [];
     this.add = this.add.bind(this);
+    this.get = this.get.bind(this);
     this.remove = this.remove.bind(this);
     this.sendRooms = this.sendRooms.bind(this);
     this.isInAnyRoom = this.isInAnyRoom.bind(this);
     this.getById = this.getById.bind(this);
     this.removeUserBySid = this.removeUserBySid.bind(this);
+    this.rest = this.rest.bind(this);
+    this.init = this.init.bind(this);
   }
 
-  
-  get(_room)
-  {
+  init(){
+    config.room.default.forEach(_room => {
+      this.add(_room);
+    });
+  }
+
+  rest() {
+    if(!this.app) return; 
+    this.app.post('/api/room',  (req, res)=> {
+      let room = req.body;
+      room = this.add(room);
+      res.json(room);
+    });
+
+    this.app.get('/api/room',  (req, res) => {
+      if (!req.query['roomid'] || !req.query['roomtype'])
+        res.end();
+      let room = {
+        id: req.query['roomid'],
+        type: req.query['roomtype']
+      };
+      room = this.get(room);
+      res.json(room);
+    });
+  }
+
+  get(_room) {
     return _.findLast(this.rooms, {
       id: _room.id,
       type: _room.type
     });
-
   }
   add(_room, _cb) {
     let r = _.findLast(this.rooms, {

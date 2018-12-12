@@ -1,15 +1,17 @@
-var nchat_plugin_move = $(`<div class="nchat-welcome"><div style="font-size:48px">欢迎使用 N-Chat</div>
+var nchat_welcome = $(`<div class="nchat-welcome"><div style="font-size:48px">欢迎使用 N-Chat</div>
 <div style="margin-top:60px">N-Chat is NOT only CHAT</div></div>`);
-$('html').append(nchat_plugin_move);
-
-setTimeout(function(){
-    nchat_plugin_move.css('display', 'none');
-},3000);
+$('html').append(nchat_welcome);
+nchat_welcome.click(function () {
+    nchat_welcome.css('display', 'none');
+})
+setTimeout(function () {
+    nchat_welcome.css('display', 'none');
+}, 3000);
 
 
 var chat; //for chatUI-d3.min.js required 
 var chatRoom = function (container, server) {
-    var socket,stackedit, room, user, users, roomUsers, rooms, fav_rooms;
+    var socket, stackedit, room, user, users, roomUsers, rooms, fav_rooms;
     var uploadArea = document.getElementById(container);
     var ui = chatUI(d3.select('#' + container));
     var nchat = {};
@@ -18,18 +20,18 @@ var chatRoom = function (container, server) {
 
     var initCurrentUser = function (callback) {
         var _user = {
-            id: 'tw11',
+            id: 'tw14',
             name: 'Tony.J.Wang（Manager,MIS）',
             iconUrl: '/images/avatar/default.jpg'
         }
 
-        d3.select("#user_icon")
-             .attr('src', _user.iconUrl)
-             .attr('title', _user.name);
+       /* d3.select("#user_icon")
+            .attr('src', _user.iconUrl)
+            .attr('title', _user.name);
 
-         callback(_user);
+        callback(_user);*/
 
-       /* login_ne(function (userInfo) {
+       login_ne(function (userInfo) {
             _user.id = userInfo.UserID;
             _user.name = userInfo.FullName + ' (' + userInfo.Title + ')';
             _user.iconUrl = userInfo.Avatar;
@@ -38,9 +40,9 @@ var chatRoom = function (container, server) {
                 .attr('src', _user.iconUrl)
                 .attr('title', _user.name);
 
-            if (callback != undefined)
+            if (callback)
                 callback(_user);
-        });*/
+        });
 
     }
 
@@ -64,7 +66,7 @@ var chatRoom = function (container, server) {
 
         renderRoom();
 
-        $.get('/room?roomid=' + id + '&roomtype=' + type,
+        $.get('/api/room?roomid=' + id + '&roomtype=' + type,
             function (data) {
                 if (data) {
                     room = data;
@@ -109,7 +111,7 @@ var chatRoom = function (container, server) {
     var createRoom = function (_room, callback) {
         $.ajax({
             type: "post",
-            url: '//' + window.location.host + '/room',
+            url: '//' + window.location.host + '/api/room',
             data: JSON.stringify(_room),
             async: true,
             contentType: 'application/json',
@@ -400,7 +402,7 @@ var chatRoom = function (container, server) {
 
             $.ajax({
                 type: "post",
-                url: "/uploadFile",
+                url: "/api/file",
                 headers: {
                     "Access-Control-Allow-Origin": "*"
                 },
@@ -430,14 +432,28 @@ var chatRoom = function (container, server) {
 
         ui.addBubble({
             type: 'text',
-            value: format_msg(htmlEncode(msg)),
+            value: utils.format_msg(htmlEncode(msg)),
             class: 'human',
             sender: user,
-            time: (new Date()).toLocaleTimeString(),
+            time: utils.localTime(),
             delay: 0
-        },function(){mermaid.init()});
-    };
+        }, function () {
+            mermaid.init()
+        });
 
+    }
+
+    var receiveMessage = function (msg, isHistory, callback) {
+        ui.addBubble({
+            type: 'text',
+            value: utils.format_msg(msg.value),
+            class: msg.sender.id == user.id ? 'human' : 'bot',
+            sender: msg.sender,
+            time: msg.time,
+            delay: 500,
+            isHistory: isHistory
+        }, callback);
+    }
     var socketEvent = function () {
 
         socket = io.connect(server);
@@ -445,7 +461,7 @@ var chatRoom = function (container, server) {
         window.onbeforeunload = function (event) {
             socket.disconnect();
         };
-        
+
         socket.on('connect', function () {
             socket.emit('join', user, room);
             d3.select("#user_status").style('background-color', 'green').html('online');
@@ -476,14 +492,9 @@ var chatRoom = function (container, server) {
         });
 
         socket.on('message', function (msg) {
-            ui.addBubble({
-                type: 'text',
-                value: format_msg(msg.value),
-                class: msg.sender.id == user.id ? 'human' : 'bot',
-                sender: msg.sender,
-                time: msg.time,
-                delay: 500
-            },function(){mermaid.init()});
+            receiveMessage(msg, false, function () {
+                mermaid.init()
+            });
         });
     }
 
@@ -513,36 +524,14 @@ var chatRoom = function (container, server) {
         logout_ne();
     }
 
-    var initMarkdown = function(){
+    var initMarkdown = function () {
 
         d3.select('#open_markdown').attr('onclick', 'nchat.openMarkdownEditor()');
-    
         stackedit = new Stackedit();
-        mermaid.initialize({
-            startOnLoad:true
-        });
-
-    
-        marked.setOptions({
-            renderer: new marked.Renderer(),
-            highlight: function (code, lan) {
-                if (lan == 'mermaid') return '<div class="mermaid">' + htmlDecode(code) +'</div>';
-                return hljs.highlightAuto(htmlDecode(code)).value;
-            },
-            pedantic: false,
-            gfm: true,
-            tables: true,
-            breaks: false,
-            sanitize: false,
-            smartLists: true,
-            smartypants: false,
-            xhtml: false
-        });
     }
-    
+
     var md_msg = '';
     nchat.openMarkdownEditor = function () {
-
         var input = d3.select('#chat_input').node();
         stackedit.openFile({
             name: room.name + '_' + moment().utc().local().format("YYYYMMDDHHmmss"),
@@ -550,76 +539,101 @@ var chatRoom = function (container, server) {
                 text: input.value
             }
         });
-
-        d3.select('div[class=stackedit-container]').on('click',function(){
-           stackedit.close();
+        
+        d3.select('div[class=stackedit-container]').on('click', function () {
+            stackedit.close();
         })
 
-        stackedit.on('fileChange', function(file) {
+        stackedit.on('fileChange', function (file) {
             md_msg = file.content.text;
         });
 
-        stackedit.on('close', function(file){
-           input.value = md_msg;
-           d3.select('#chat_input').node().focus();
+        stackedit.on('close', function (file) {
+            input.value = md_msg;
+            d3.select('#chat_input').node().focus();
         });
 
     }
 
-    var scrollToTopEvent = function()
-    {
+    var translate = false;
+    var initTranslate = function () {
+        d3.select('#open_translate').on('click', function () {
+
+            if (translate) {
+                d3.select('#open_translate').attr('class', null);
+                translate = false;
+            } else {
+                d3.select('#open_translate').attr('class', 'active');
+                translate = true;
+            }
+        });
+    }
+
+    var initLoadHistoryMsg = function () {
         $('#cb-flow').scroll(function () {
-            var scrollTop = $('#cb-flow').scrollTop(); 
-            if (scrollTop==0) {
+            var scrollTop = $('#cb-flow').scrollTop();
+            if (scrollTop == 0) {
                 loadHistoryMsg();
             }
         });
     }
 
-    var loadHistoryMsg = function(){
-       
-        var lastMsgTime =  $(_.take( _.sortBy($('div[data-time]'),function(el){
-           return $(el).data('time');
+    var loadHistoryMsg = function () {
+
+        var lastMsgTime = $(_.take(_.sortBy($('div[data-time]'), function (el) {
+            return $(el).data('time');
         }))).data('time');
 
-        $.get('/message?roomid=' + room.id + '&lastMsgTime=' + lastMsgTime,
-        function (messages) {
-            if (messages) {
-                messages = _.orderBy(messages,['time'],['desc']);
-                messages.forEach(function(msg){
-                    ui.addBubble({
-                        type: 'text',
-                        value: format_msg(msg.value),
-                        class: msg.sender.id == user.id ? 'human' : 'bot',
-                        sender: msg.sender,
-                        time: msg.time,
-                        delay: 500,
-                        isHistory:true
-                    },function(){mermaid.init(); $('#cb-flow').scrollTop(40);});
-                });
-            }
-        });
+        $.get('/api/message?roomid=' + room.id + '&lastMsgTime=' + lastMsgTime,
+            function (messages) {
+                if (messages) {
+                    messages = _.orderBy(messages, ['time'], ['desc']);
+                    messages.forEach(function (msg) {
+                        receiveMessage(msg, true, function () {
+                            mermaid.init();
+                            $('#cb-flow').scrollTop(40);
+                        });
+                    });
+                }
+            });
     }
 
+    var initInput = function () {
+        ui.showInput(
+            function (msg) {
+                if (translate)
+                    utils.translate(msg,
+                        function (result) {
+                            let _msg = '```\n' + msg + '```\n```\n' + result.text + '```';
+                            sendMessage(_msg);
+                        });
+                else
+                    sendMessage(msg);
+            }
+        );
+
+    }
     var init = function () {
-
-        addBigPicArea(container);
-        initMarkdown();
-        scrollToTopEvent();
-
         d3.select('body').on('dblclick', swithFullScreen);
-
+        addBigPicArea(container);
+        initTranslate();
+        initMarkdown();
+        initLoadHistoryMsg();
         initCurrentUser(function (_user) {
             user = _user;
             initCurrentRoom();
-            ui.showInput(sendMessage);
+            initInput();
             socketEvent();
+
+            $("[title]").tooltip({placement:'auto'});
 
         });
 
         EventUtil.addHandler(uploadArea, "dragenter", uploadFile);
         EventUtil.addHandler(uploadArea, "dragover", uploadFile);
         EventUtil.addHandler(uploadArea, "drop", uploadFile);
+
+        
 
 
     }

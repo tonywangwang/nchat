@@ -6,20 +6,18 @@ const https = require('https');
 const cors = require('cors');
 const path = require('path');
 const bodyParser = require('body-parser');
-const multipart = require('connect-multiparty');
+const favicon = require('serve-favicon');
 const fs = require("fs");
-const file = require('./service/file');
 
-
-config.init('local', startup)
+config.init('negConfig', startup)
 
 function startup() {
 
   let server;
 
   if (config.get().https) {
-    const privateKey = fs.readFileSync(path.join(__dirname, './cert/private.pem'), 'utf8');
-    const certificate = fs.readFileSync(path.join(__dirname, './cert/file.crt'), 'utf8');
+    const privateKey = fs.readFileSync(path.join(__dirname, './cert/1583250_chat.newegg.space.key'), 'utf8');
+    const certificate = fs.readFileSync(path.join(__dirname, './cert/1583250_chat.newegg.space.pem'), 'utf8');
     const credentials = {
       key: privateKey,
       cert: certificate
@@ -28,17 +26,18 @@ function startup() {
   } else
     server = http.Server(app);
 
-  const io = require('socket.io')(server);
 
-  const nc = require('./service/nchat');
-  let nchat = new nc(io);
+    // view engine setup
+    app.set('views', path.join(__dirname, 'view'));
+    app.set('view engine', 'ejs');
+    app.use(favicon(path.join(__dirname, 'public/images', 'favicon.png')));
 
   app.use(cors());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({
     extended: false
   }));
-
+  
   if (process.env.ENV == 'PRD')
     app.use(express.static(path.join(__dirname, 'public'), {
       maxage: '1h'
@@ -46,57 +45,23 @@ function startup() {
   else
     app.use(express.static(path.join(__dirname, 'public')));
 
-  app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/view/index.html');
+  const io = require('socket.io')(server);
+  const nc = require('./service/nchat');
+  let nchat = new nc(io, app);
+  nchat.init();
+
+  app.get('/',  (req, res)=> {
+    res.render('nchat');
   });
 
-  app.post('/room', function (req, res) {
-    let room = req.body;
-    room = nchat.roomManager.add(room);
-    res.json(room);
+  app.get('/bot',  (req, res)=> {
+    res.render('bot');
   });
 
-  app.get('/room', function (req, res) {
-    if (!req.query['roomid'] || !req.query['roomtype'])
-      res.end();
-    let room = {
-      id: req.query['roomid'],
-      type: req.query['roomtype']
-    };
-    room = nchat.roomManager.get(room);
-    res.json(room);
-  });
-
-  app.get('/message', function (req, res) {
-    let query = {
-      roomid: req.query['roomid'],
-      pageIndex: req.query['pageIndex'],
-      pageSize: req.query['pageSize'],
-      lastMsgTime: req.query['lastMsgTime']
-    };
-    nchat.messager.get_Messages(query, msgs => {
-      res.json(msgs);
-    });
-  });
-
-  app.post("/uploadFile", multipart(), function (req, res) {
-    let f = new file();
-    let msg;
-    f.upload(req.files, (d) => {
-      msg = JSON.parse(req.body.message);
-      msg.room = nchat.roomManager.add(msg.room);
-      nchat.messager.send_File({
-        msg: msg,
-        url: d.url,
-        name: d.name
-      })
-    });
-    res.end();
-  });
 
   const port = process.env.PORT || config.get().port || 80;
   server.listen(port, function () {
-    console.log('N-Chat is listening on *:' + port);
+    console.log('N-Chat is listening on *:' + port + ' with ' + (config.get().https ? 'https' : 'http'));
   });
 
 }
